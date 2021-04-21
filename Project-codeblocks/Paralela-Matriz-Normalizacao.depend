@@ -1,0 +1,35 @@
+# depslib dependency file v1.0
+1619038929 source:c:\github\paralela-matriz-normalizacao\lista.c
+	"lista.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1619038929 c:\github\paralela-matriz-normalizacao\lista.h
+	<stdbool.h>
+
+1619038929 source:c:\github\paralela-matriz-normalizacao\threads.c
+	"threads.h"
+	<stdlib.h>
+
+1619038929 c:\github\paralela-matriz-normalizacao\threads.h
+	<stdbool.h>
+	<stdio.h>
+	"lista.h"
+	"main.h"
+	<pthread.h>
+
+1619038929 c:\github\paralela-matriz-normalizacao\main.h
+	<omp.h>
+
+1619039291 source:c:\github\paralela-matriz-normalizacao\paralela-matriz-normalizacao\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+	<time.h>
+	"../lista.h"
+	"../threads.h"
+	"../main.h"
+	<omp.h>
+

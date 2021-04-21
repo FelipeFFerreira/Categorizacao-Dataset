@@ -1,7 +1,7 @@
 /* threads.h
  *
- * Definição do TAD para operação com threads e funçoes especificas 
- * sobre o arquivo main.c, como também os protótipo das operações sobre 
+ * Definição do TAD para operação com threads e funçoes especificas
+ * sobre o arquivo main.c, como também os protótipo das operações sobre
  * esse TAD.
  *
  */
@@ -11,7 +11,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "lista.h"
+#include "lista_th.h"
 #include "main.h"
 #include <pthread.h>
 
@@ -53,4 +53,7 @@ FILE *open_arquivo(char * str, char * modo);
 
 void print_responsabilidade_thread(args * _args);
 
+void create_threads(args * _args, int n);
+
+void thread_jobs(args * _args, int n);
 #endif //_THREADS_H
