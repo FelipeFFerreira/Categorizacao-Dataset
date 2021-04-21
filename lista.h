@@ -37,5 +37,7 @@ void lst_print(lst_ptr);
 /*Verifica se a info já existe na lista*/
 bool lst_existing(lst_ptr l, lst_info, int *);
 
+/* Retorna id de uma informaçao da lista*/
+unsigned int lst_info_id(lst_ptr l, lst_info x);
 #endif
 

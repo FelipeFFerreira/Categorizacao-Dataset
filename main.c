@@ -30,9 +30,10 @@ typedef struct {
 	tipoDado matriz[N][N];
 }path_arq; //struct para captura da matriz de entrada
 
-path_arq path_arq_t[1];
+path_arq path_arq_t[2];
 
 static lst_ptr colun_date[QTD_COLLUN];
+static int state;
 
 
 
@@ -72,15 +73,37 @@ static void add_lst_info_distinct(lst_ptr * l, char * str)
 	lst_info info_t;
 	int id_t = 0;
 	strcpy(info_t.word, str);
-	static int i = 0;
-		//printf("%s, %s\n", "Entrei", str);
+
 	if (!lst_existing(*l, info_t, &id_t)) {
 
 		info_t.id = id_t;
 		lst_ins(l, info_t);
-		i = i >= QTD_COLLUN ? 0 : i;
-		//printf("%d.", ++i);
-		//lst_print(*l);
+	}
+}
+
+static void normalize_info_date(lst_ptr l, char * str)
+{	
+	lst_info info_t;
+	strcpy(info_t.word, str);
+	int id = lst_info_id(l, info_t);
+	if (id != 0)
+		fprintf(path_arq_t[1].fptr, "%d\n", id);
+	fprintf(path_arq_t[1].fptr, "nao existe\n");
+}
+
+void * normaliza_colun_date(void * args)
+{
+	path_arq * _path_arq_t = (path_arq*) args;
+	char str[1001], *token;
+	int i, j;
+	while (state == WAIT) {
+		for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
+			token = strtok(str, ",");
+			for (j = 0; token != NULL; j++) {
+				if (j == 1) normalize_info_date(colun_date[1], token);
+				token = strtok(NULL, ",");
+			}
+		}
 	}
 }
 
@@ -90,6 +113,7 @@ void * ler_matriz_entrada(void * args)
 	char str[1001], *token;
 	int i, j;
 
+	state = WAIT;
 	for (int i = 0; i < QTD_COLLUN; i++) lst_init(&colun_date[i]);
 	
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
@@ -99,6 +123,7 @@ void * ler_matriz_entrada(void * args)
 			token = strtok(NULL, ",");
 		}
 	}
+	state = EXECUTED;
 	
 	//exit(EXIT_SUCCESS);
 }
@@ -114,16 +139,22 @@ int main ()
 	args _args[threads - 1]; //numero de args por threads de CPU
 	struct argsArq _argsArq; //thread responsavel pelo arquivo de saida
 	pthread_t thread_1; //thread responsavel pelo arquivo de entrada_1
+	pthread_t thread_2; //thread responsavel pelo arquivo de entrada_1
 
 	path_arq_t[0].fptr = open_arquivo("/home/felipe/Faculdade/Paralela-Matriz-Normalizacao/src/Matrizes/dataset_00_1000.csv", "r"); //path arq com a 2.matriz
-
+	path_arq_t[1].fptr = open_arquivo("/home/felipe/Faculdade/Paralela-Matriz-Normalizacao/src/Matrizes/colun_1.csv", "w"); //path arq com a 2.matriz
+	
 	if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
 	else exit(1);
 
+	if (status_create( status = pthread_create((&thread_2), NULL, normaliza_colun_date, (void *)&path_arq_t[0])));
+	else exit(1);
+
 	pthread_join(thread_1, NULL);
+	pthread_join(thread_2, NULL);
 	fclose(path_arq_t[0].fptr);
-	printf("%s\n", "sair");
-	lst_print(colun_date[0]);
+	fclose(path_arq_t[1].fptr);
+	lst_print(colun_date[1]);
 	exit(0xFF);
 
 	_argsArq.arq = open_arquivo("matriz_resultante.csv", "w"); //path arq com o resultado da mult.
