@@ -8,6 +8,7 @@
 
 #include "threads.h"
 #include "lista_th.h"
+#include "../lib_lista_int/lista.h"
 #include <stdlib.h>
 
 void print_matriz(char * dados[N][LEN][QTD_COLLUN])
@@ -15,7 +16,7 @@ void print_matriz(char * dados[N][LEN][QTD_COLLUN])
 	tipoDado i, j;
 	for (i = 0; i < N; i++) {
 		for (int j = 0; j < QTD_COLLUN; j++)
-			printf("%s ", dados[i][j]);
+			//printf("%s ", dados[i][j]);
 		printf("\n");
 	}
 	printf("\n");
@@ -26,7 +27,7 @@ void print_colun_matriz(char dados[][LEN][QTD_COLLUN], int j)
 	tipoDado i;
 	for (int i = 0; i < N; i++)
 	{
-		printf("%d.%s\n", i + 1, dados[i][j]);
+		//printf("%d.%s\n", i + 1, dados[i][j]);
 	}
 }
 
@@ -56,7 +57,7 @@ FILE *open_arquivo(char * str, char * modo) {
 
     FILE * arq; // Arquivo lógico
     if ((arq = fopen(str, modo)) == NULL) {
-        fprintf(stderr, "Erro na abertura do arquivo %s\n", "filename");
+        printf(stderr, "Erro na abertura do arquivo %s\n", "filename");
         exit(1);
      }
 

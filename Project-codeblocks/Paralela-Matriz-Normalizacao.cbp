@@ -31,18 +31,22 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="../lista_th.c">
+		<Unit filename="../src/libs/lib_lista_int/lista.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../lista_th.h" />
-		<Unit filename="../main.h" />
-		<Unit filename="../threads.c">
+		<Unit filename="../src/libs/lib_lista_int/lista.h" />
+		<Unit filename="../src/libs/lib_thread/lista_th.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../threads.h" />
-		<Unit filename="main.c">
+		<Unit filename="../src/libs/lib_thread/lista_th.h" />
+		<Unit filename="../src/libs/lib_thread/threads.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/libs/lib_thread/threads.h" />
+		<Unit filename="../src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/main.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

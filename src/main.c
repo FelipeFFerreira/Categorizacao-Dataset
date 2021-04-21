@@ -3,8 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#include "lista.h"
-#include "threads.h"
+#include "libs/lib_lista_int/lista.h"
+#include "libs/lib_thread/lista_th.h"
+#include "libs/lib_thread/threads.h"
 
 
 
@@ -43,8 +44,8 @@ static void * multiplicacao(void * argss)
 
 void * solicitacao_arquivo(void * argsArq)
 {
-	
-	tipoDado i = 0; 
+
+	tipoDado i = 0;
 	tipoDado j, pronto = N;
 	ptrArgsArq _argssArq = (ptrArgsArq) argsArq;
 
@@ -53,39 +54,38 @@ void * solicitacao_arquivo(void * argsArq)
 			for (j = 0; j < N; j++) {
 				fprintf(_argssArq->arq, "%lu  ", matrizResultante[i][j]);
 			}
-			fprintf(_argssArq->arq, "%c", '\n'); 
+			fprintf(_argssArq->arq, "%c", '\n');
 			_argssArq->statusArq[i] = EXECUTED;
 			i += 1;
 		}
 	}
-	
+
 	fclose(_argssArq->arq);
 	pthread_exit( (void*) 0 );	//Legado do retorno
 }
 
 
-/* 
+/*
  * ******* Regiao de Variaves Globais *************
  */
 
-static void add_lst_info_distinct(lst_ptr * l, char * str)
+static void add_lst_info_distinct(lst_ptr_th * l, char * str)
 {
-	lst_info info_t;
+	lst_info_th info_t;
 	int id_t = 0;
 	strcpy(info_t.word, str);
 
-	if (!lst_existing(*l, info_t, &id_t)) {
-
+	if (!lst_existing_th(*l, info_t, &id_t)) {
 		info_t.id = id_t;
-		lst_ins(l, info_t);
+		lst_ins_th(l, info_t);
 	}
 }
 
-static void normalize_info_date(lst_ptr l, char * str)
-{	
-	lst_info info_t;
+static void normalize_info_date(lst_ptr_th l, char * str)
+{
+	lst_info_th info_t;
 	strcpy(info_t.word, str);
-	int id = lst_info_id(l, info_t);
+	int id = lst_info_id_th(l, info_t);
 	if (id != 0)
 		fprintf(path_arq_t[1].fptr, "%d\n", id);
 	fprintf(path_arq_t[1].fptr, "nao existe\n");
@@ -115,7 +115,7 @@ void * ler_matriz_entrada(void * args)
 
 	state = WAIT;
 	for (int i = 0; i < QTD_COLLUN; i++) lst_init(&colun_date[i]);
-	
+
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
 		token = strtok(str, ",");
 		for (j = 0; token != NULL; j++) {
@@ -124,7 +124,7 @@ void * ler_matriz_entrada(void * args)
 		}
 	}
 	state = EXECUTED;
-	
+
 	//exit(EXIT_SUCCESS);
 }
 
@@ -141,9 +141,9 @@ int main ()
 	pthread_t thread_1; //thread responsavel pelo arquivo de entrada_1
 	pthread_t thread_2; //thread responsavel pelo arquivo de entrada_1
 
-	path_arq_t[0].fptr = open_arquivo("/home/felipe/Faculdade/Paralela-Matriz-Normalizacao/src/Matrizes/dataset_00_1000.csv", "r"); //path arq com a 2.matriz
-	path_arq_t[1].fptr = open_arquivo("/home/felipe/Faculdade/Paralela-Matriz-Normalizacao/src/Matrizes/colun_1.csv", "w"); //path arq com a 2.matriz
-	
+	path_arq_t[0].fptr = open_arquivo("C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv", "r"); //path arq com a 2.matriz
+	path_arq_t[1].fptr = open_arquivo("C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\colun_1.csv", "w"); //path arq com a 2.matriz
+
 	if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
 	else exit(1);
 
@@ -154,7 +154,7 @@ int main ()
 	pthread_join(thread_2, NULL);
 	fclose(path_arq_t[0].fptr);
 	fclose(path_arq_t[1].fptr);
-	lst_print(colun_date[1]);
+	//lst_print(colun_date[1]);
 	exit(0xFF);
 
 	_argsArq.arq = open_arquivo("matriz_resultante.csv", "w"); //path arq com o resultado da mult.
@@ -170,7 +170,7 @@ int main ()
 
 	/*Repassa linha de trabalho balanceada da matriz, por thread*/
 	//for(i = 0; i < N; i++) lst_ins(&_args[i % (threads - 1)].lista, i);
-	
+
 	tempo = clock();
 	/*Repassa função de trabalho*/
 	for(i = 0; i < threads - 1; i++) {
@@ -178,7 +178,7 @@ int main ()
 		if (status_create(status = pthread_create((&_args[i].thread), NULL, multiplicacao, (void *)&_args[i])));
 		else exit(1);
 	}
-	
+
 	//Thered delegada para escrita do resulto no arquivo.
 	if(status_create(status = pthread_create((&_argsArq.thread), NULL, solicitacao_arquivo, (void *)&_argsArq)));
 	else exit(1);
@@ -188,10 +188,10 @@ int main ()
 		pthread_join(_args[i].thread, NULL);
 	}
 	pthread_join(_argsArq.thread, NULL);
-	
+
 	/*print jobs de cada thread*/
 	print_responsabilidade_thread(_args);
-	
+
 	fclose(_argsArq.arq);
 	//imprimirMatriz(matrizResultante);
 

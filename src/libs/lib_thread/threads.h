@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "lista_th.h"
-#include "main.h"
 #include <pthread.h>
 
 #define threads 4 //Defina a quantidade de threads a serem utilizadas.
@@ -39,7 +38,7 @@ struct argsArq {
 
 typedef struct {
 	pthread_t thread;
-    lst_ptr lista;
+    lst_ptr_th lista;
     int id;
     ptrArgsArq ptrArq;
 }args;

@@ -16,10 +16,10 @@ void lst_init(lst_ptr * l) {
     *l = NULL;
 }
 
-void lst_ins(lst_ptr * l, lst_info val) {
+void lst_ins(lst_ptr * l, lst_info_int val) {
 
     lst_ptr n;
-    if ((n = (lst_ptr) malloc(sizeof(struct lst_no))) == NULL) {
+    if ((n = (lst_ptr) malloc(sizeof(struct lst_no_int))) == NULL) {
         fprintf(stderr, "Erro de alocacao de memoria!\n");
         exit(1);
     }

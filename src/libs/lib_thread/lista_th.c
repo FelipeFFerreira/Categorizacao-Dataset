@@ -12,14 +12,14 @@
 #include <stdio.h>
 #include <string.h>
 
-void lst_init(lst_ptr * l) {
+void lst_init_th(lst_ptr_th * l) {
     *l = NULL;
 }
 
-void lst_ins(lst_ptr * l, lst_info val) {
+void lst_ins_th(lst_ptr_th * l, lst_info_th val) {
 
-    lst_ptr n;
-    if ((n = (lst_ptr) malloc(sizeof(struct lst_no))) == NULL) {
+    lst_ptr_th n;
+    if ((n = (lst_ptr_th) malloc(sizeof(struct lst_no_th))) == NULL) {
         fprintf(stderr, "Erro de alocacao de memoria!\n");
         exit(1);
     }
@@ -30,7 +30,7 @@ void lst_ins(lst_ptr * l, lst_info val) {
         return;
     }
     else {
-        lst_ptr p = *l;
+        lst_ptr_th p = *l;
          while (p->prox != NULL) {
             p = p->prox;
          }
@@ -40,16 +40,16 @@ void lst_ins(lst_ptr * l, lst_info val) {
     }
 }
 
-void lst_print(lst_ptr l) {
+void lst_print_th(lst_ptr_th l) {
     printf("[ ");
     while (l != NULL) {
-        printf("[%s,%d] ", l->dado.word, l->dado.id);
+        //printf("[%s,%d] ", l->dado.word, l->dado.id);
         l = l->prox;
     }
     printf(" ]\n");
 }
 
-bool lst_existing(lst_ptr l, lst_info x, int * id)
+bool lst_existing_th(lst_ptr_th l, lst_info_th x, int * id)
 {
     int count = 0;
     while (l != NULL) {
@@ -58,12 +58,11 @@ bool lst_existing(lst_ptr l, lst_info x, int * id)
         l = l->prox;
         count += 1;
     }
-    //printf("id->%d\n", count);
     *id = count + 1;
     return false;
 }
 
-unsigned int lst_info_id(lst_ptr l, lst_info x)
+unsigned int lst_info_id_th(lst_ptr_th l, lst_info_th x)
 {
     while (l != NULL) {
         if (!strcmp(l->dado.word, x.word))

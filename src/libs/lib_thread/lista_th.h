@@ -5,39 +5,39 @@
  *
  */
 
-#ifndef _LISTA_H
-#define _LISTA_H
+#ifndef _LISTA_TH_H
+#define _LISTA_TH_H
 #include <stdbool.h>
 
-typedef struct 
+typedef struct
 {
 	char word[300];
 	int id;
 }info_date;
-typedef info_date lst_info;
+typedef info_date lst_info_th;
 
-typedef struct lst_no * lst_ptr;
-struct lst_no {
-    lst_info dado;
-    lst_ptr prox;
+typedef struct lst_no_th * lst_ptr_th;
+struct lst_no_th {
+    lst_info_th dado;
+    lst_ptr_th prox;
 };
 
 /* inicializa a lista ordenada */
-void lst_init(lst_ptr *);
+void lst_init_th(lst_ptr_th *);
 
 /* insere um novo elemento na lista ordenada */
-void lst_ins(lst_ptr *, lst_info);
+void lst_ins_th(lst_ptr_th *, lst_info_th);
 
 /* remove um elemento da lista ordenada */
-bool lst_rem(lst_ptr *, lst_info);
+bool lst_rem_th(lst_ptr_th *, lst_info_th);
 
 /* imprime os elementos da lista ordenada */
-void lst_print(lst_ptr);
+void lst_print_th(lst_ptr_th);
 
 /*Verifica se a info já existe na lista*/
-bool lst_existing(lst_ptr l, lst_info, int *);
+bool lst_existing_th(lst_ptr_th l, lst_info_th, int *);
 
 /* Retorna id de uma informaçao da lista*/
-unsigned int lst_info_id(lst_ptr l, lst_info x);
+unsigned int lst_info_id_th(lst_ptr_th l, lst_info_th x);
 #endif
 
