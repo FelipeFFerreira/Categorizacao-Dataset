@@ -30,34 +30,14 @@ typedef struct {
 	tipoDado matriz[N][N];
 }path_arq; //struct para captura da matriz de entrada
 
-path_arq path_arq_t[2];
+path_arq path_arq_t[1];
+
+static lst_ptr colun_date[QTD_COLLUN];
+
+
 
 static void * multiplicacao(void * argss)
-{
-	
-    args * _argss = (args *)argss;
-    lst_ptr p;
-	tipoDado j;
-	p = _argss->lista;
-
-	int k = 0;
-	
-	while (p != NULL) {
-		#ifdef INSTALL_OMP
-			#pragma omp parallel for
-		#endif
-		for (j = 0;  j < N; j++) {
-			for (k = 0; k < N; k++) {
-					matrizResultante[p->dado][j] = matrizResultante[p->dado][j] + 
-												   path_arq_t[0].matriz[p->dado][k] * path_arq_t[1].matriz[k][j];										
-			}
-		}
-		_argss->ptrArq->statusArq[p->dado] = READY; //libera para escrita no arquivo
-		p = p->prox;
-	}
-
-	pthread_exit( (void*) 0 );//Legado do retorno
-}
+{}
 
 
 void * solicitacao_arquivo(void * argsArq)
@@ -86,26 +66,33 @@ void * solicitacao_arquivo(void * argsArq)
 /* 
  * ******* Regiao de Variaves Globais *************
  */
-typedef struct
-{
-	char str[LEN];
-	int id;
-	
-}dado_coluna;
 
+static void add_lst_info_distinct(lst_ptr l, char * str)
+{
+	lst_info info_t;
+	int id_t;
+	strcpy(info_t.word, str);
+
+	if (!lst_existing(l, info_t, &id_t)) {
+		info_t.id = id_t;
+		lst_ins(&l, info_t);
+	}
+}
 
 void * ler_matriz_entrada(void * args)
 {
 	path_arq * _path_arq_t = (path_arq*) args;
 	char str[1001], *token;
 	int i, j;
+
+	for (int i = 0; i < QTD_COLLUN; i++) lst_init(&colun_date[i]);
 	
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
+		
 		token = strtok(str, ",");
 		for (j = 0; token != NULL; j++) {
-			
+			add_lst_info_distinct(colun_date[i], token);
 			strcpy(dados[i][j], token);
-			//printf("%d]%s ", i + 1, dados[i][j]);
 			token = strtok(NULL, ",");
 		}
 		//printf("\n");
@@ -123,7 +110,6 @@ static void _print_colun_matriz(int j)
 		printf("%d.%s\n", i + 1, dados[i][j]);
 	}
 }
-
 
 
 
@@ -159,7 +145,7 @@ int main ()
 	_argsArq.id = i; //id threads arq saida.
 
 	/*Repassa linha de trabalho balanceada da matriz, por thread*/
-	for(i = 0; i < N; i++) lst_ins(&_args[i % (threads - 1)].lista, i);
+	//for(i = 0; i < N; i++) lst_ins(&_args[i % (threads - 1)].lista, i);
 	
 	tempo = clock();
 	/*Repassa função de trabalho*/
