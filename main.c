@@ -22,7 +22,7 @@
 #endif
 
 tipoDado matrizResultante[N][N];
-char dados[N][LEN];
+static char dados[N][QTD_COLLUN][LEN]; // go to pq static aq?
 
 
 typedef struct {
@@ -97,22 +97,35 @@ typedef struct
 void * ler_matriz_entrada(void * args)
 {
 	path_arq * _path_arq_t = (path_arq*) args;
-	
+	char str[1001], *token;
 	int i, j;
-	char str[10001], *token, dados[N][QTD_COLLUN][LEN];
+	
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
 		token = strtok(str, ",");
 		for (j = 0; token != NULL; j++) {
 			
 			strcpy(dados[i][j], token);
-			printf("%d-%s ", i + 1, dados[i][j]);
+			//printf("%d]%s ", i + 1, dados[i][j]);
 			token = strtok(NULL, ",");
 		}
-		printf("\n");
+		//printf("\n");
 	}
 	printf("%s, %d\n", "Entrei", i);
-	exit(EXIT_SUCCESS);
+	//exit(EXIT_SUCCESS);
 }
+
+
+static void _print_colun_matriz(int j)
+{
+	tipoDado i;
+	for (int i = 0; i < N; i++)
+	{
+		printf("%d.%s\n", i + 1, dados[i][j]);
+	}
+}
+
+
+
 
 int main ()
 {
@@ -130,8 +143,8 @@ int main ()
 
 	pthread_join(thread_1, NULL);
 	fclose(path_arq_t[0].fptr);
-
-	print_matriz(dados);
+	printf("%s\n", "sair");
+	_print_colun_matriz(6);
 	exit(0xFF);
 
 	_argsArq.arq = open_arquivo("matriz_resultante.csv", "w"); //path arq com o resultado da mult.

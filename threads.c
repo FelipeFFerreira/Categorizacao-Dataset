@@ -9,7 +9,7 @@
 #include "threads.h"
 #include <stdlib.h>
 
-void print_matriz(char dados[][LEN][QTD_COLLUN])
+void print_matriz(char * dados[N][LEN][QTD_COLLUN])
 {
 	tipoDado i, j;
 	for (i = 0; i < N; i++) {
@@ -25,7 +25,7 @@ void print_colun_matriz(char dados[][LEN][QTD_COLLUN], int j)
 	tipoDado i;
 	for (int i = 0; i < N; i++)
 	{
-		printf("%s\n", dados[i][j - 1]);
+		printf("%d.%s\n", i + 1, dados[i][j]);
 	}
 }
 

@@ -16,7 +16,7 @@
 #include <pthread.h>
 
 #define threads 4 //Defina a quantidade de threads a serem utilizadas.
-#define N 100 //DEFINA O TAMANO DA MATRIZ AQUI
+#define N 90 //DEFINA O TAMANO DA MATRIZ AQUI
 #define LEN 500
 #define QTD_COLLUN 13
 
@@ -44,7 +44,7 @@ typedef struct {
 }args;
 
 
-void print_matriz(char dados[][LEN][QTD_COLLUN]);
+void print_matriz(char * dados[N][LEN][QTD_COLLUN]);
 
 void print_colun_matriz(char dados[][LEN][QTD_COLLUN], int j);
 
