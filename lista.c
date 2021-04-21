@@ -43,10 +43,10 @@ void lst_ins(lst_ptr * l, lst_info val) {
 void lst_print(lst_ptr l) {
     printf("[ ");
     while (l != NULL) {
-        printf("[%s, %d", l->dado.word, l->dado.id);
+        printf("[%s %d", l->dado.word, l->dado.id);
         l = l->prox;
     }
-    printf("\b ]\n");
+    printf("]\n");
 }
 
 bool lst_existing(lst_ptr l, lst_info x, int * id)
@@ -58,6 +58,7 @@ bool lst_existing(lst_ptr l, lst_info x, int * id)
         l = l->prox;
         count += 1;
     }
+    //printf("id->%d\n", count);
     *id = count + 1;
     return false;
 }

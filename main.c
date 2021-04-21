@@ -22,7 +22,7 @@
 #endif
 
 tipoDado matrizResultante[N][N];
-static char dados[N][QTD_COLLUN][LEN]; // go to pq static aq?
+//static char dados[N][QTD_COLLUN][LEN]; // go to pq static aq?
 
 
 typedef struct {
@@ -67,15 +67,19 @@ void * solicitacao_arquivo(void * argsArq)
  * ******* Regiao de Variaves Globais *************
  */
 
-static void add_lst_info_distinct(lst_ptr l, char * str)
+static void add_lst_info_distinct(lst_ptr * l, char * str)
 {
 	lst_info info_t;
-	int id_t;
+	int id_t = 0;
 	strcpy(info_t.word, str);
+	static int i = 0;
+		//printf("%s, %s\n", "Entrei", str);
+	if (!lst_existing(*l, info_t, &id_t)) {
 
-	if (!lst_existing(l, info_t, &id_t)) {
 		info_t.id = id_t;
-		lst_ins(&l, info_t);
+		lst_ins(l, info_t);
+		printf("%d.", ++i);
+		lst_print(*l);
 	}
 }
 
@@ -88,26 +92,25 @@ void * ler_matriz_entrada(void * args)
 	for (int i = 0; i < QTD_COLLUN; i++) lst_init(&colun_date[i]);
 	
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
-		
 		token = strtok(str, ",");
 		for (j = 0; token != NULL; j++) {
-			add_lst_info_distinct(colun_date[i], token);
-			strcpy(dados[i][j], token);
+			add_lst_info_distinct(&colun_date[j], token);
+			//strcpy(dados[i][j], token);
 			token = strtok(NULL, ",");
 		}
 		//printf("\n");
 	}
-	printf("%s, %d\n", "Entrei", i);
-	//exit(EXIT_SUCCESS);
+	
+	exit(EXIT_SUCCESS);
 }
 
 
 static void _print_colun_matriz(int j)
 {
 	tipoDado i;
-	for (int i = 0; i < N; i++)
+	for (int i = 0; ; i++)
 	{
-		printf("%d.%s\n", i + 1, dados[i][j]);
+		//printf("%d.%s\n", i + 1, dados[i][j]);
 	}
 }
 

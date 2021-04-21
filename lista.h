@@ -11,7 +11,7 @@
 
 typedef struct 
 {
-	char * word;
+	char word[300];
 	int id;
 }info_date;
 typedef info_date lst_info;
