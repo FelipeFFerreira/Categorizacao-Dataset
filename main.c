@@ -78,6 +78,7 @@ static void add_lst_info_distinct(lst_ptr * l, char * str)
 
 		info_t.id = id_t;
 		lst_ins(l, info_t);
+		i = i >= QTD_COLLUN ? 0 : i;
 		printf("%d.", ++i);
 		lst_print(*l);
 	}
