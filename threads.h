@@ -16,7 +16,7 @@
 #include <pthread.h>
 
 #define threads 4 //Defina a quantidade de threads a serem utilizadas.
-#define N 3 //DEFINA O TAMANO DA MATRIZ AQUI
+#define N 1000 //DEFINA O TAMANO DA MATRIZ AQUI
 #define LEN 5
 #define QTD_COLLUN 27
 

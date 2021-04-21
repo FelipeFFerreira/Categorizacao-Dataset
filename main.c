@@ -79,8 +79,8 @@ static void add_lst_info_distinct(lst_ptr * l, char * str)
 		info_t.id = id_t;
 		lst_ins(l, info_t);
 		i = i >= QTD_COLLUN ? 0 : i;
-		printf("%d.", ++i);
-		lst_print(*l);
+		//printf("%d.", ++i);
+		//lst_print(*l);
 	}
 }
 
@@ -96,24 +96,13 @@ void * ler_matriz_entrada(void * args)
 		token = strtok(str, ",");
 		for (j = 0; token != NULL; j++) {
 			add_lst_info_distinct(&colun_date[j], token);
-			//strcpy(dados[i][j], token);
 			token = strtok(NULL, ",");
 		}
-		//printf("\n");
 	}
 	
-	exit(EXIT_SUCCESS);
+	//exit(EXIT_SUCCESS);
 }
 
-
-static void _print_colun_matriz(int j)
-{
-	tipoDado i;
-	for (int i = 0; ; i++)
-	{
-		//printf("%d.%s\n", i + 1, dados[i][j]);
-	}
-}
 
 
 
@@ -134,7 +123,7 @@ int main ()
 	pthread_join(thread_1, NULL);
 	fclose(path_arq_t[0].fptr);
 	printf("%s\n", "sair");
-	_print_colun_matriz(6);
+	lst_print(colun_date[0]);
 	exit(0xFF);
 
 	_argsArq.arq = open_arquivo("matriz_resultante.csv", "w"); //path arq com o resultado da mult.
