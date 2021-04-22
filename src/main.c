@@ -28,12 +28,11 @@ tipoDado matrizResultante[N][N];
 
 typedef struct {
 	FILE * fptr;
-	tipoDado matriz[N][N];
 }path_arq; //struct para captura da matriz de entrada
 
-path_arq path_arq_t[2];
+path_arq path_arq_t[1];
 
-static lst_ptr colun_date[QTD_COLLUN];
+static lst_ptr_th colun_date[QTD_COLLUN];
 static int state;
 
 
@@ -75,9 +74,11 @@ static void add_lst_info_distinct(lst_ptr_th * l, char * str)
 	int id_t = 0;
 	strcpy(info_t.word, str);
 
+
 	if (!lst_existing_th(*l, info_t, &id_t)) {
 		info_t.id = id_t;
 		lst_ins_th(l, info_t);
+
 	}
 }
 
@@ -114,21 +115,23 @@ void * ler_matriz_entrada(void * args)
 	int i, j;
 
 	state = WAIT;
-	for (int i = 0; i < QTD_COLLUN; i++) lst_init(&colun_date[i]);
+	for (int i = 0; i < QTD_COLLUN; i++) lst_init_th(&colun_date[i]);
 
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
 		token = strtok(str, ",");
-		for (j = 0; token != NULL; j++) {
+		for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
 			add_lst_info_distinct(&colun_date[j], token);
+			//printf("%s\n", token);
 			token = strtok(NULL, ",");
+
 		}
 	}
 	state = EXECUTED;
+	lst_print_th(colun_date[2]);
+	exit(0xFA);
 
 	//exit(EXIT_SUCCESS);
 }
-
-
 
 
 int main ()
@@ -136,63 +139,64 @@ int main ()
 	tipoDado i, j;
 	int status;
 	clock_t tempo;
-	args _args[threads - 1]; //numero de args por threads de CPU
-	struct argsArq _argsArq; //thread responsavel pelo arquivo de saida
-	pthread_t thread_1; //thread responsavel pelo arquivo de entrada_1
-	pthread_t thread_2; //thread responsavel pelo arquivo de entrada_1
+	args _args[num_threads]; //numero de args por threads de CPU
+	pthread_t thread_1; //thread responsavel pelo arquivo de entrada
 
+    create_threads(_args, num_threads);
 	path_arq_t[0].fptr = open_arquivo("C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv", "r"); //path arq com a 2.matriz
-	path_arq_t[1].fptr = open_arquivo("C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\colun_1.csv", "w"); //path arq com a 2.matriz
 
-	if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
+    if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
 	else exit(1);
 
-	if (status_create( status = pthread_create((&thread_2), NULL, normaliza_colun_date, (void *)&path_arq_t[0])));
-	else exit(1);
+    pthread_join(thread_1, NULL);
 
-	pthread_join(thread_1, NULL);
-	pthread_join(thread_2, NULL);
+	thread_jobs(_args, QTD_COLLUN, num_threads); //repassa trabalhos
+    print_responsabilidade_thread(_args);
+
+    /*Repassa função de trabalho*/
+	for(i = 0; i < num_threads; i++) {
+		//_args[i].ptrArq = &_argsArq;
+		if (status_create(status = pthread_create((&_args[i].thread), NULL, normaliza_colun_date, (void *)&_args[i])));
+		else exit(1);
+	}
+	//exit(0xA);
+
+
 	fclose(path_arq_t[0].fptr);
 	fclose(path_arq_t[1].fptr);
 	//lst_print(colun_date[1]);
-	exit(0xFF);
 
-	_argsArq.arq = open_arquivo("matriz_resultante.csv", "w"); //path arq com o resultado da mult.
 
-	for(i = 0; i < N; i++) _argsArq.statusArq[i] = WAIT; //coloca todas as linhas em estado de espera.
+
+	//for(i = 0; i < N; i++) _argsArq.statusArq[i] = WAIT; //coloca todas as linhas em estado de espera.
 
 	/*Repassa o identificador para as threads*/
-	for(i = 0; i < threads - 1; i++) {
+	for(i = 0; i < num_threads - 1; i++) {
 		lst_init(&_args[i].lista);
 		_args[i].id = i + 1;
 	}
-	_argsArq.id = i; //id threads arq saida.
+	//_argsArq.id = i; //id threads arq saida.
 
 	/*Repassa linha de trabalho balanceada da matriz, por thread*/
 	//for(i = 0; i < N; i++) lst_ins(&_args[i % (threads - 1)].lista, i);
 
 	tempo = clock();
-	/*Repassa função de trabalho*/
-	for(i = 0; i < threads - 1; i++) {
-		_args[i].ptrArq = &_argsArq;
-		if (status_create(status = pthread_create((&_args[i].thread), NULL, multiplicacao, (void *)&_args[i])));
-		else exit(1);
-	}
+
 
 	//Thered delegada para escrita do resulto no arquivo.
-	if(status_create(status = pthread_create((&_argsArq.thread), NULL, solicitacao_arquivo, (void *)&_argsArq)));
-	else exit(1);
+	//if(status_create(status = pthread_create((&_argsArq.thread), NULL, solicitacao_arquivo, (void *)&_argsArq)));
+	//else exit(1);
 
 	/*Thered principal aguarda todas as thredes de trabalhos finalizarem para proseguir*/
-	for(i = 0; i < threads - 1; i++) {
+	for(i = 0; i < num_threads - 1; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
-	pthread_join(_argsArq.thread, NULL);
+	//pthread_join(_argsArq.thread, NULL);
 
 	/*print jobs de cada thread*/
 	print_responsabilidade_thread(_args);
 
-	fclose(_argsArq.arq);
+	//fclose(_argsArq.arq);
 	//imprimirMatriz(matrizResultante);
 
 	printf("\nTerminando processo ...\n");

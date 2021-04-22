@@ -43,7 +43,7 @@ void lst_ins_th(lst_ptr_th * l, lst_info_th val) {
 void lst_print_th(lst_ptr_th l) {
     printf("[ ");
     while (l != NULL) {
-        //printf("[%s,%d] ", l->dado.word, l->dado.id);
+        printf("[%s,%d] ", l->dado.word, l->dado.id);
         l = l->prox;
     }
     printf(" ]\n");

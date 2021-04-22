@@ -33,7 +33,7 @@
 	"../main.h"
 	<omp.h>
 
-1619043048 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.c
+1619049792 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.c
 	"lista.h"
 	<stdlib.h>
 	<stdio.h>
@@ -42,7 +42,7 @@
 1619041996 c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.h
 	<stdbool.h>
 
-1619043042 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
+1619050038 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
 	"lista_th.h"
 	<stdlib.h>
 	<stdio.h>
@@ -51,19 +51,19 @@
 1619042242 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.h
 	<stdbool.h>
 
-1619042955 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
+1619047992 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
 	"threads.h"
 	"lista_th.h"
 	"../lib_lista_int/lista.h"
 	<stdlib.h>
 
-1619041806 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
+1619049519 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
 	<stdbool.h>
 	<stdio.h>
 	"lista_th.h"
 	<pthread.h>
 
-1619043033 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1619049667 source:c:\github\paralela-matriz-normalizacao\src\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

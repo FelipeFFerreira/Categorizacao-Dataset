@@ -14,7 +14,7 @@
 #include "lista_th.h"
 #include <pthread.h>
 
-#define threads 4 //Defina a quantidade de threads a serem utilizadas.
+#define num_threads 6 //Defina a quantidade de threads a serem utilizadas.
 #define N 1000
  //DEFINA O TAMANO DA MATRIZ AQUI
 #define LEN 5
@@ -40,6 +40,7 @@ typedef struct {
 	pthread_t thread;
     lst_ptr_th lista;
     int id;
+    FILE * fptr[5];
     ptrArgsArq ptrArq;
 }args;
 
@@ -54,5 +55,5 @@ void print_responsabilidade_thread(args * _args);
 
 void create_threads(args * _args, int n);
 
-void thread_jobs(args * _args, int n);
+void thread_jobs(args * _args, int, int);
 #endif //_THREADS_H
