@@ -102,28 +102,32 @@ static bool is_my_job(lst_ptr l, int colun)
 static int normalize_info_date(args args_t, char * str, int colun)
 {
     pthread_mutex_lock(&(mutex_1));
-    //printf("\nID:%d estou aqui (normalize_info)\n", args_t.id);
+    printf("\nID:%d estou aqui (normalize_info)\n", args_t.id);
     lst_info_th info_t;
 	strcpy(info_t.word, str);
-	//printf("search:%s, colun = %d\n", info_t.word, colun);
+	printf("search:%s, colun = %d\n", info_t.word, colun);
 
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
         if (id != 0) {
             fprintf(args_t.fptr[colun - 1], "%d\n", id);
-            printf("Escrevi no arq");
+            printf("Escrevi no arq\n");
+            pthread_mutex_unlock(&(mutex_1));
             return PROCEED;
         }
-        else return HOLD;
+        else {
+                pthread_mutex_unlock(&(mutex_1));
+                return HOLD;
+        }
 	}
 	return PROCEED;
-    pthread_mutex_unlock(&(mutex_1));
+    //pthread_mutex_unlock(&(mutex_1));
 
 }
 
 void * normaliza_colun_date(void * _args)
 {
-    //pthread_mutex_lock(&(mutex_1));
+    pthread_mutex_lock(&(mutex));
 	args * args_t = (args*) _args;
 	char str[1001], *token;
 	int i, j;
@@ -131,20 +135,21 @@ void * normaliza_colun_date(void * _args)
     for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
         token = strtok(str, ",");
         for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
+                printf("\ntoken: %s, j=%d\n", token, j);
             switch (normalize_info_date(*args_t, token, j + 1)) {
                 case HOLD : j -= 1;
-                            printf("HOLD");
-                            //INSTALL_DEBUG
+                           printf("HOLD\n");
+                            INSTALL_DEBUG
                     break;
-                case PROCEED ://printf("HOLD");
+                case PROCEED :printf("PROCEED\n");
                              //INSTALL_DEBUG
                     break;
-            token = strtok(NULL, ",");
             }
+            token = strtok(NULL, ",");
         }
         printf("chegyue");
     }
-    //pthread_mutex_unlock(&(mutex_1));
+    pthread_mutex_unlock(&(mutex));
 }
 
 void * ler_matriz_entrada(void * args)
@@ -185,7 +190,7 @@ int main ()
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     pthread_join(thread_1, NULL);
 
-    print_responsabilidade_thread(_args);
+    //print_responsabilidade_thread(_args);
     /*Repassa função de trabalho*/
 	for(i = 0; i < num_threads; i++) {
 		//_args[i].ptrArq = &_argsArq;
