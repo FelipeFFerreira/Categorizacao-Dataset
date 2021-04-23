@@ -16,7 +16,7 @@
 */
 
 //#define INSTALL_OMP //Install_openmp
-#define INSTALL_DEBUG
+#define INSTALL_DEBUG exit(0xA);
 
 #ifdef INSTALL_OMP
 	#include <omp.h>
@@ -25,6 +25,8 @@
 tipoDado matrizResultante[N][N];
 //static char dados[N][QTD_COLLUN][LEN]; // go to pq static aq?
 
+#define HOLD 0
+#define PROCEED 1
 
 typedef struct {
 	FILE * fptr;
@@ -33,7 +35,11 @@ typedef struct {
 path_arq path_arq_t[1];
 
 static lst_ptr_th colun_date[QTD_COLLUN];
+static char arq_origem[] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv";
 static int state;
+pthread_mutex_t mutex;
+pthread_mutex_t mutex_1;
+
 
 
 
@@ -82,30 +88,65 @@ static void add_lst_info_distinct(lst_ptr_th * l, char * str)
 	}
 }
 
-static void normalize_info_date(lst_ptr_th l, char * str)
+
+static bool is_my_job(lst_ptr l, int colun)
 {
-	lst_info_th info_t;
-	strcpy(info_t.word, str);
-	int id = lst_info_id_th(l, info_t);
-	if (id != 0)
-		fprintf(path_arq_t[1].fptr, "%d\n", id);
-	fprintf(path_arq_t[1].fptr, "nao existe\n");
+    while (l != NULL) {
+        if (l->dado == colun)
+            return true;
+        l = l->prox;
+    }
+    return false;
 }
 
-void * normaliza_colun_date(void * args)
+static int normalize_info_date(args args_t, char * str, int colun)
 {
-	path_arq * _path_arq_t = (path_arq*) args;
+    pthread_mutex_lock(&(mutex_1));
+    printf("\nID:%d estou aqui (normalize_info)\n", args_t.id);
+    lst_info_th info_t;
+	strcpy(info_t.word, str);
+	printf("search:%s, colun = %d\n", info_t.word, colun);
+
+	if (is_my_job(args_t.lista, colun)) {
+        int id = lst_info_id_th(colun_date[colun - 1], info_t);
+        printf("ID_search:%d\ncolun = %d\n", id, colun);
+        lst_print_th(colun_date[colun - 1]);
+        INSTALL_DEBUG
+        lst_print(args_t.lista);
+        //INSTALL_DEBUG
+        if (id != 0) {
+            fprintf(args_t.fptr[colun - 1], "%d\n", id);
+            return PROCEED;
+        }
+        else return HOLD;
+	}
+	return PROCEED;
+    INSTALL_DEBUG
+    pthread_mutex_unlock(&(mutex_1));
+
+}
+
+void * normaliza_colun_date(void * _args)
+{
+    //pthread_mutex_lock(&(mutex_1));
+	args * args_t = (args*) _args;
 	char str[1001], *token;
 	int i, j;
-	while (state == WAIT) {
-		for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
-			token = strtok(str, ",");
-			for (j = 0; token != NULL; j++) {
-				if (j == 1) normalize_info_date(colun_date[1], token);
-				token = strtok(NULL, ",");
-			}
-		}
-	}
+    printf("ID:%d estou aqui (normaliza_colun)\n", args_t->id);
+    for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
+        token = strtok(str, ",");
+        for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
+            switch (normalize_info_date(*args_t, token, j + 1)) {
+                case HOLD : j -=1;
+                    break;
+                case PROCEED :
+                    break;
+            token = strtok(NULL, ",");
+            }
+        }
+        printf("chegyue");
+    }
+    //pthread_mutex_unlock(&(mutex_1));
 }
 
 void * ler_matriz_entrada(void * args)
@@ -115,7 +156,8 @@ void * ler_matriz_entrada(void * args)
 	int i, j;
 
 	state = WAIT;
-	for (int i = 0; i < QTD_COLLUN; i++) lst_init_th(&colun_date[i]);
+	for (int i = 0; i < QTD_COLLUN; i++)
+        lst_init_th(&colun_date[i]);
 
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
 		token = strtok(str, ",");
@@ -123,14 +165,9 @@ void * ler_matriz_entrada(void * args)
 			add_lst_info_distinct(&colun_date[j], token);
 			//printf("%s\n", token);
 			token = strtok(NULL, ",");
-
 		}
 	}
 	state = EXECUTED;
-	lst_print_th(colun_date[2]);
-	exit(0xFA);
-
-	//exit(EXIT_SUCCESS);
 }
 
 
@@ -142,27 +179,35 @@ int main ()
 	args _args[num_threads]; //numero de args por threads de CPU
 	pthread_t thread_1; //thread responsavel pelo arquivo de entrada
 
-    create_threads(_args, num_threads);
-	path_arq_t[0].fptr = open_arquivo("C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv", "r"); //path arq com a 2.matriz
+    create_threads(_args, num_threads, arq_origem);
+    thread_jobs(_args, QTD_COLLUN, num_threads); //repassa trabalhos
+
+    path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path arq com a 2.matriz
 
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
-	else exit(1);
-
     pthread_join(thread_1, NULL);
 
-	thread_jobs(_args, QTD_COLLUN, num_threads); //repassa trabalhos
     print_responsabilidade_thread(_args);
-
     /*Repassa função de trabalho*/
 	for(i = 0; i < num_threads; i++) {
 		//_args[i].ptrArq = &_argsArq;
 		if (status_create(status = pthread_create((&_args[i].thread), NULL, normaliza_colun_date, (void *)&_args[i])));
 		else exit(1);
 	}
-	//exit(0xA);
 
+    /*Thered principal aguarda todas as thredes de trabalhos finalizarem*/
+	for(i = 0; i < num_threads; i++) {
+		pthread_join(_args[i].thread, NULL);
+	}
+    sleep(10000);
+	exit(0x2);
 
-	fclose(path_arq_t[0].fptr);
+    for(i = 0; i < num_threads; i++) {
+		for (j = 0; j < 4; j++)
+            fclose(_args[i].fptr[j]);
+	}
+    fclose(path_arq_t[0].fptr);
+
 	fclose(path_arq_t[1].fptr);
 	//lst_print(colun_date[1]);
 
@@ -187,10 +232,7 @@ int main ()
 	//if(status_create(status = pthread_create((&_argsArq.thread), NULL, solicitacao_arquivo, (void *)&_argsArq)));
 	//else exit(1);
 
-	/*Thered principal aguarda todas as thredes de trabalhos finalizarem para proseguir*/
-	for(i = 0; i < num_threads - 1; i++) {
-		pthread_join(_args[i].thread, NULL);
-	}
+
 	//pthread_join(_argsArq.thread, NULL);
 
 	/*print jobs de cada thread*/

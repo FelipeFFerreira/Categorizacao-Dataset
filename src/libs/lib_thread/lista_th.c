@@ -69,6 +69,5 @@ unsigned int lst_info_id_th(lst_ptr_th l, lst_info_th x)
             return l->dado.id;
         l = l->prox;
     }
-
     return 0;
 }

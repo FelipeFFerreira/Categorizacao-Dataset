@@ -11,14 +11,14 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "lista_th.h"
 #include <pthread.h>
+#include "../lib_lista_int/lista.h"
 
 #define num_threads 6 //Defina a quantidade de threads a serem utilizadas.
 #define N 1000
  //DEFINA O TAMANO DA MATRIZ AQUI
 #define LEN 5
-#define QTD_COLLUN 27
+#define QTD_COLLUN 24
 
 /*semaphoro controle de IO para thread especificas de IO*/
 #define WAIT 0
@@ -38,9 +38,10 @@ struct argsArq {
 
 typedef struct {
 	pthread_t thread;
-    lst_ptr_th lista;
+    lst_ptr lista;
     int id;
     FILE * fptr[5];
+    FILE * fptr_origem;
     ptrArgsArq ptrArq;
 }args;
 
@@ -53,7 +54,7 @@ FILE *open_arquivo(char * str, char * modo);
 
 void print_responsabilidade_thread(args * _args);
 
-void create_threads(args * _args, int n);
+void create_threads(args * _args, int n, char *);
 
 void thread_jobs(args * _args, int, int);
 #endif //_THREADS_H

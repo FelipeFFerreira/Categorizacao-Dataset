@@ -64,13 +64,14 @@ FILE *open_arquivo(char * str, char * modo) {
     return arq;
 }
 
-void create_threads(args * _args, int n)
+void create_threads(args * _args, int n, char * arq_origem)
 {
     int i;
     /*Repassa o identificador para as threads*/
 	for(i = 0; i < n; i++) {
 		lst_init(&_args[i].lista);
 		_args[i].id = i + 1;
+		_args[i].fptr_origem = open_arquivo(arq_origem, "r");
 	}
 }
 
