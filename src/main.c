@@ -102,26 +102,21 @@ static bool is_my_job(lst_ptr l, int colun)
 static int normalize_info_date(args args_t, char * str, int colun)
 {
     pthread_mutex_lock(&(mutex_1));
-    printf("\nID:%d estou aqui (normalize_info)\n", args_t.id);
+    //printf("\nID:%d estou aqui (normalize_info)\n", args_t.id);
     lst_info_th info_t;
 	strcpy(info_t.word, str);
-	printf("search:%s, colun = %d\n", info_t.word, colun);
+	//printf("search:%s, colun = %d\n", info_t.word, colun);
 
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
-        printf("ID_search:%d\ncolun = %d\n", id, colun);
-        lst_print_th(colun_date[colun - 1]);
-        INSTALL_DEBUG
-        lst_print(args_t.lista);
-        //INSTALL_DEBUG
         if (id != 0) {
             fprintf(args_t.fptr[colun - 1], "%d\n", id);
+            printf("Escrevi no arq");
             return PROCEED;
         }
         else return HOLD;
 	}
 	return PROCEED;
-    INSTALL_DEBUG
     pthread_mutex_unlock(&(mutex_1));
 
 }
@@ -137,9 +132,12 @@ void * normaliza_colun_date(void * _args)
         token = strtok(str, ",");
         for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
             switch (normalize_info_date(*args_t, token, j + 1)) {
-                case HOLD : j -=1;
+                case HOLD : j -= 1;
+                            printf("HOLD");
+                            //INSTALL_DEBUG
                     break;
-                case PROCEED :
+                case PROCEED ://printf("HOLD");
+                             //INSTALL_DEBUG
                     break;
             token = strtok(NULL, ",");
             }
@@ -199,8 +197,9 @@ int main ()
 	for(i = 0; i < num_threads; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
-    sleep(10000);
 	exit(0x2);
+    sleep(10000);
+
 
     for(i = 0; i < num_threads; i++) {
 		for (j = 0; j < 4; j++)

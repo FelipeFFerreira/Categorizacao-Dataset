@@ -63,7 +63,7 @@
 	<pthread.h>
 	"../lib_lista_int/lista.h"
 
-1619184192 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1619186042 source:c:\github\paralela-matriz-normalizacao\src\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
