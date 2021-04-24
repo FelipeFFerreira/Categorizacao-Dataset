@@ -49,7 +49,7 @@ static void * multiplicacao(void * argss)
 
 void * solicitacao_arquivo(void * argsArq)
 {
-
+/*
 	tipoDado i = 0;
 	tipoDado j, pronto = N;
 	ptrArgsArq _argssArq = (ptrArgsArq) argsArq;
@@ -67,6 +67,7 @@ void * solicitacao_arquivo(void * argsArq)
 
 	fclose(_argssArq->arq);
 	pthread_exit( (void*) 0 );	//Legado do retorno
+	*/
 }
 
 
@@ -113,11 +114,11 @@ static int normalize_info_date(args args_t, char * str, int colun)
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
         if (id != 0) {
-            strcpy(str_debug, args_t.path_destino[colun_fptr]);
+            //strcpy(str_debug, args_t.path_destino[colun_fptr]);
             //printf("Tentando ABRIR O ARQ %s\n", args_t.path_destino[colun_fptr]);
-            FILE * fptr = open_arquivo(args_t.path_destino[colun_fptr], "a");
-            fprintf(fptr, "%d, %s\n", id, info_t.word); //to do, quando id == 0
-            fclose(fptr);
+            //FILE * fptr = open_arquivo(args_t.path_destino[colun_fptr], "a");
+            fprintf(args_t.path_destino[colun_fptr], "%d, %s\n", id, info_t.word); //to do, quando id == 0
+            //fclose(fptr);
             //pthread_mutex_unlock(&(mutex_1));
             return PROCEED;
         }
@@ -146,8 +147,8 @@ void * normaliza_colun_date(void * _args)
                 //printf("\ntoken: %s, j=%d\n", token, j);
             switch (normalize_info_date(*args_t, token, j + 1)) {
                 case HOLD : j--; //to do
-                           printf("HOLD\n");
-                           system("pause");
+                           //printf("HOLD\n");
+                           //system("pause");
                             //INSTALL_DEBUG
                             repete = true;
                     break;

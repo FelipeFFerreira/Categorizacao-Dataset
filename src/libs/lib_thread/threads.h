@@ -27,12 +27,12 @@
 #define EXECUTED -1
 
 typedef unsigned long long int tipoDado;
-
+//enum states {AGUARDANDO = 0, PROCESSADO} state_colun;
 
 typedef struct argsArq * ptrArgsArq;
 struct argsArq {
 	pthread_t thread;
-    int statusArq[N];
+    bool status_colun[QTD_COLLUN];
     int id;
     FILE * arq;
 };
@@ -41,7 +41,7 @@ typedef struct {
 	pthread_t thread;
     lst_ptr lista;
     int id;
-    char path_destino[5][100];
+    FILE * path_destino[5];
     FILE * fptr_origem;
     ptrArgsArq ptrArq;
 }args;
