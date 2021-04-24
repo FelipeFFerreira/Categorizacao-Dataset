@@ -101,12 +101,12 @@ static bool is_my_job(lst_ptr l, int colun)
 
 static int normalize_info_date(args args_t, char * str, int colun)
 {
-    pthread_mutex_lock(&(mutex_1));
-    printf("\nID:%d aqui (normalize_info)\n", args_t.id);
+    //pthread_mutex_lock(&(mutex_1));
+    //printf("\nID:%d aqui (normalize_info)\n", args_t.id);
     lst_info_th info_t;
     int colun_fptr = (colun % QTD_COLLUN_THREAD) == 0 ? QTD_COLLUN_THREAD - 1 : (colun % QTD_COLLUN_THREAD) - 1;
 	strcpy(info_t.word, str);
-	printf("search:%s, colun = %d\n", info_t.word, colun);
+	//printf("search:%s, colun = %d\n", info_t.word, colun);
 	//printf("MY ARQ %s\n", args_t.path_destino[colun_fptr]);
 	char str_debug[70];
 
@@ -114,9 +114,9 @@ static int normalize_info_date(args args_t, char * str, int colun)
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
         if (id != 0) {
             strcpy(str_debug, args_t.path_destino[colun_fptr]);
-            printf("Tentando ABRIR O ARQ %s\n", args_t.path_destino[colun_fptr]);
+            //printf("Tentando ABRIR O ARQ %s\n", args_t.path_destino[colun_fptr]);
             FILE * fptr = open_arquivo(args_t.path_destino[colun_fptr], "a");
-            fprintf(fptr, "%d\n", id);
+            fprintf(fptr, "%d, %s\n", id, info_t.word); //to do, quando id == 0
             fclose(fptr);
             pthread_mutex_unlock(&(mutex_1));
             return PROCEED;
@@ -126,7 +126,7 @@ static int normalize_info_date(args args_t, char * str, int colun)
                 return HOLD;
         }
 	}
-	pthread_mutex_unlock(&(mutex_1));
+	//pthread_mutex_unlock(&(mutex_1));
 	return PROCEED;
 
 
@@ -134,29 +134,29 @@ static int normalize_info_date(args args_t, char * str, int colun)
 
 void * normaliza_colun_date(void * _args)
 {
-    pthread_mutex_lock(&(mutex));
+    //pthread_mutex_lock(&(mutex));
 	args * args_t = (args*) _args;
 	char str[1001], *token;
 	int i, j;
-    printf("ID:%d estou aqui (normaliza_colun)\n", args_t->id);
+    //printf("ID:%d estou aqui (normaliza_colun)\n", args_t->id);
     for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
         token = strtok(str, ",");
         for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
-                printf("\ntoken: %s, j=%d\n", token, j);
+                //printf("\ntoken: %s, j=%d\n", token, j);
             switch (normalize_info_date(*args_t, token, j + 1)) {
-                case HOLD : j -= 1;
-                           printf("HOLD\n");
+                case HOLD : j -= 1; //to do
+                           //printf("HOLD\n");
                             //INSTALL_DEBUG
                     break;
-                case PROCEED :printf("PROCEED\n");
+                case PROCEED ://printf("PROCEED\n");
                              //INSTALL_DEBUG
                     break;
             }
             token = strtok(NULL, ",");
         }
-        printf("sair\n");
+        //printf("sair\n");
     }
-    pthread_mutex_unlock(&(mutex));
+    //pthread_mutex_unlock(&(mutex));
 }
 
 void * ler_matriz_entrada(void * args)
@@ -209,8 +209,8 @@ int main ()
 	for(i = 0; i < num_threads; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
-	//exit(0x2);
-    sleep(10000);
+	exit(0);
+
 
 
     for(i = 0; i < num_threads; i++) {
