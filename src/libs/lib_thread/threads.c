@@ -58,7 +58,7 @@ FILE *open_arquivo(char * str, char * modo) {
     FILE * arq; // Arquivo lógico
     if ((arq = fopen(str, modo)) == NULL) {
         printf(stderr, "Erro na abertura do arquivo %s\n", "filename");
-        exit(1);
+        exit(0x3);
      }
 
     return arq;
@@ -87,8 +87,13 @@ void thread_jobs(args * _args, int n , int n_threads)
             qtd_colun += 1;
             lst_ins(&_args[n_thread].lista, qtd_colun);
             sprintf(str_path, "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\colun-%d.csv", qtd_colun);
-            _args[n_thread].fptr[j] = open_arquivo(str_path, "w");
+            strcpy(_args[n_thread].path_destino[j], str_path);
+            printf("id_th: %d, arq: [%d]%s\n", _args[n_thread].id, j, _args[n_thread].path_destino[j]);
+            FILE *fptr = open_arquivo(str_path, "w");
+            fclose(fptr);
         }
+        printf("\n");
         n_thread += 1;
 	}
+	system("pause");
 }

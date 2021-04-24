@@ -102,16 +102,22 @@ static bool is_my_job(lst_ptr l, int colun)
 static int normalize_info_date(args args_t, char * str, int colun)
 {
     pthread_mutex_lock(&(mutex_1));
-    printf("\nID:%d estou aqui (normalize_info)\n", args_t.id);
+    printf("\nID:%d aqui (normalize_info)\n", args_t.id);
     lst_info_th info_t;
+    int colun_fptr = (colun % QTD_COLLUN_THREAD) == 0 ? QTD_COLLUN_THREAD - 1 : (colun % QTD_COLLUN_THREAD) - 1;
 	strcpy(info_t.word, str);
 	printf("search:%s, colun = %d\n", info_t.word, colun);
+	//printf("MY ARQ %s\n", args_t.path_destino[colun_fptr]);
+	char str_debug[70];
 
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
         if (id != 0) {
-            fprintf(args_t.fptr[colun - 1], "%d\n", id);
-            printf("Escrevi no arq\n");
+            strcpy(str_debug, args_t.path_destino[colun_fptr]);
+            printf("Tentando ABRIR O ARQ %s\n", args_t.path_destino[colun_fptr]);
+            FILE * fptr = open_arquivo(args_t.path_destino[colun_fptr], "a");
+            fprintf(fptr, "%d\n", id);
+            fclose(fptr);
             pthread_mutex_unlock(&(mutex_1));
             return PROCEED;
         }
@@ -120,8 +126,9 @@ static int normalize_info_date(args args_t, char * str, int colun)
                 return HOLD;
         }
 	}
+	pthread_mutex_unlock(&(mutex_1));
 	return PROCEED;
-    //pthread_mutex_unlock(&(mutex_1));
+
 
 }
 
@@ -139,7 +146,7 @@ void * normaliza_colun_date(void * _args)
             switch (normalize_info_date(*args_t, token, j + 1)) {
                 case HOLD : j -= 1;
                            printf("HOLD\n");
-                            INSTALL_DEBUG
+                            //INSTALL_DEBUG
                     break;
                 case PROCEED :printf("PROCEED\n");
                              //INSTALL_DEBUG
@@ -147,7 +154,7 @@ void * normaliza_colun_date(void * _args)
             }
             token = strtok(NULL, ",");
         }
-        printf("chegyue");
+        printf("sair\n");
     }
     pthread_mutex_unlock(&(mutex));
 }
@@ -195,20 +202,20 @@ int main ()
 	for(i = 0; i < num_threads; i++) {
 		//_args[i].ptrArq = &_argsArq;
 		if (status_create(status = pthread_create((&_args[i].thread), NULL, normaliza_colun_date, (void *)&_args[i])));
-		else exit(1);
+		else exit(0x555);
 	}
 
     /*Thered principal aguarda todas as thredes de trabalhos finalizarem*/
 	for(i = 0; i < num_threads; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
-	exit(0x2);
+	//exit(0x2);
     sleep(10000);
 
 
     for(i = 0; i < num_threads; i++) {
-		for (j = 0; j < 4; j++)
-            fclose(_args[i].fptr[j]);
+		for (j = 0; j < 4; j++);
+          // fclose(_args[i].fptr[j]);
 	}
     fclose(path_arq_t[0].fptr);
 
@@ -248,5 +255,5 @@ int main ()
 	printf("\nTerminando processo ...\n");
 	printf("\n\n[Tempo Total Do Processo: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 
-	return EXIT_SUCCESS;
+	return 0;
 }

@@ -19,6 +19,7 @@
  //DEFINA O TAMANO DA MATRIZ AQUI
 #define LEN 5
 #define QTD_COLLUN 24
+#define QTD_COLLUN_THREAD 4
 
 /*semaphoro controle de IO para thread especificas de IO*/
 #define WAIT 0
@@ -40,7 +41,7 @@ typedef struct {
 	pthread_t thread;
     lst_ptr lista;
     int id;
-    FILE * fptr[5];
+    char path_destino[5][100];
     FILE * fptr_origem;
     ptrArgsArq ptrArq;
 }args;
