@@ -83,6 +83,8 @@ void thread_jobs(args * _args, int n , int n_threads)
     /*Repassa linha de trabalho ciclica, por thread*/
 	while (qtd_colun < QTD_COLLUN - 1) {
             _args[n_thread].id = n_thread;
+            _args[n_thread].state_tarefa.status_tarefa = 0;
+            strcpy(_args[n_thread].state_tarefa.word_jobs, "");
         for (j = 0; j < 4; j++) {
             qtd_colun += 1;
             lst_ins(&_args[n_thread].lista, qtd_colun);

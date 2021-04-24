@@ -27,6 +27,7 @@ tipoDado matrizResultante[N][N];
 
 #define HOLD 0
 #define PROCEED 1
+#define NEXT 2
 
 typedef struct {
 	FILE * fptr;
@@ -120,40 +121,41 @@ static int normalize_info_date(args args_t, char * str, int colun)
         }
 	}
 	//pthread_mutex_unlock(&(mutex_1));
-	return PROCEED;
-
-
+	return NEXT;
 }
 
 void * normaliza_colun_date(void * _args)
 {
-    //pthread_mutex_lock(&(mutex));
+    pthread_mutex_lock(&(mutex));
 	args * args_t = (args*) _args;
-	char str[1001], *token;
+	char str[1001], word[100], *token;
 	int i, j;
 	bool repete = false;
     //printf("ID:%d estou aqui (normaliza_colun)\n", args_t->id);
     for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
         token = strtok(str, ",");
         for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
-                //printf("\ntoken: %s, j=%d\n", token, j);
+
             switch (normalize_info_date(*args_t, token, j + 1)) {
                 case HOLD : j--; //to do
                            //printf("HOLD\n");
-                           //system("pause");
-                            //INSTALL_DEBUG
                             repete = true;
                     break;
                 case PROCEED ://printf("PROCEED\n");
-                             //INSTALL_DEBUG
-                             repete = false;
+                                repete = false;
+                                sprintf(word, "%s,", token);
+                                //strcat(args_t->state_tarefa.word_jobs, word);
+                    break;
+                case NEXT :
                     break;
             }
-            if (!repete)token = strtok(NULL, ",");
+            if (!repete)
+                token = strtok(NULL, ",");
         }
-        //printf("sair\n");
+        //printf("%s\n", args_t->state_tarefa.word_jobs);
+        //system("pause");
     }
-    //pthread_mutex_unlock(&(mutex));
+    pthread_mutex_unlock(&(mutex));
 }
 
 void * ler_matriz_entrada(void * args)

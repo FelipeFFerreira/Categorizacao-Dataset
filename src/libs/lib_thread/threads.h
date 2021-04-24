@@ -38,11 +38,17 @@ struct args_arq {
 };
 
 typedef struct {
+    char word_jobs[100];
+    char status_tarefa;
+}tarefas;
+
+typedef struct {
+    int id;
 	pthread_t thread;
     lst_ptr lista;
-    int id;
-    FILE * fptr_destinos[5];
+    FILE * fptr_destinos[QTD_COLLUN_THREAD];
     FILE * fptr_origem;
+    tarefas state_tarefa;
     ptr_args_arq main_destino;
 }args;
 
