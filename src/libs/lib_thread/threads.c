@@ -89,7 +89,7 @@ void thread_jobs(args * _args, int n , int n_threads)
             sprintf(str_path, "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\colun-%d.csv", qtd_colun);
             //strcpy(_args[n_thread].path_destino[j], str_path);
             //printf("id_th: %d, arq: [%d]%s\n", _args[n_thread].id, j, _args[n_thread].path_destino[j]);
-            _args[n_thread].path_destino[j] = open_arquivo(str_path, "w");
+            _args[n_thread].fptr_destinos[j] = open_arquivo(str_path, "w");
 
         }
         n_thread += 1;

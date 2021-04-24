@@ -29,8 +29,8 @@
 typedef unsigned long long int tipoDado;
 //enum states {AGUARDANDO = 0, PROCESSADO} state_colun;
 
-typedef struct argsArq * ptrArgsArq;
-struct argsArq {
+typedef struct args_arq * ptr_args_arq;
+struct args_arq {
 	pthread_t thread;
     bool status_colun[QTD_COLLUN];
     int id;
@@ -41,9 +41,9 @@ typedef struct {
 	pthread_t thread;
     lst_ptr lista;
     int id;
-    FILE * path_destino[5];
+    FILE * fptr_destinos[5];
     FILE * fptr_origem;
-    ptrArgsArq ptrArq;
+    ptr_args_arq main_destino;
 }args;
 
 

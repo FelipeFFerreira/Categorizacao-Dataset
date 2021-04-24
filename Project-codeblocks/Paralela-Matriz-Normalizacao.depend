@@ -51,19 +51,19 @@
 1619054976 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.h
 	<stdbool.h>
 
-1619284569 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
+1619285201 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
 	"threads.h"
 	"lista_th.h"
 	"../lib_lista_int/lista.h"
 	<stdlib.h>
 
-1619284382 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
+1619285190 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
 	<stdbool.h>
 	<stdio.h>
 	<pthread.h>
 	"../lib_lista_int/lista.h"
 
-1619284648 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1619285257 source:c:\github\paralela-matriz-normalizacao\src\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

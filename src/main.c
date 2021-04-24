@@ -52,7 +52,7 @@ void * solicitacao_arquivo(void * argsArq)
 /*
 	tipoDado i = 0;
 	tipoDado j, pronto = N;
-	ptrArgsArq _argssArq = (ptrArgsArq) argsArq;
+	ptr_args_arq _argssArq = (ptr_args_arq) argsArq;
 
 	while (i < N) {
 		if (_argssArq->statusArq[i] == READY) {
@@ -107,23 +107,15 @@ static int normalize_info_date(args args_t, char * str, int colun)
     lst_info_th info_t;
     int colun_fptr = (colun % QTD_COLLUN_THREAD) == 0 ? QTD_COLLUN_THREAD - 1 : (colun % QTD_COLLUN_THREAD) - 1;
 	strcpy(info_t.word, str);
-	//printf("search:%s, colun = %d\n", info_t.word, colun);
-	//printf("MY ARQ %s\n", args_t.path_destino[colun_fptr]);
 	char str_debug[70];
 
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
         if (id != 0) {
-            //strcpy(str_debug, args_t.path_destino[colun_fptr]);
-            //printf("Tentando ABRIR O ARQ %s\n", args_t.path_destino[colun_fptr]);
-            //FILE * fptr = open_arquivo(args_t.path_destino[colun_fptr], "a");
-            fprintf(args_t.path_destino[colun_fptr], "%d, %s\n", id, info_t.word); //to do, quando id == 0
-            //fclose(fptr);
-            //pthread_mutex_unlock(&(mutex_1));
+            fprintf(args_t.fptr_destinos[colun_fptr], "%d, %s\n", id, info_t.word); //to do, quando id == 0
             return PROCEED;
         }
         else {
-                //pthread_mutex_unlock(&(mutex_1));
                 return HOLD;
         }
 	}
