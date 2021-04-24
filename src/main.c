@@ -118,11 +118,11 @@ static int normalize_info_date(args args_t, char * str, int colun)
             FILE * fptr = open_arquivo(args_t.path_destino[colun_fptr], "a");
             fprintf(fptr, "%d, %s\n", id, info_t.word); //to do, quando id == 0
             fclose(fptr);
-            pthread_mutex_unlock(&(mutex_1));
+            //pthread_mutex_unlock(&(mutex_1));
             return PROCEED;
         }
         else {
-                pthread_mutex_unlock(&(mutex_1));
+                //pthread_mutex_unlock(&(mutex_1));
                 return HOLD;
         }
 	}
@@ -138,21 +138,25 @@ void * normaliza_colun_date(void * _args)
 	args * args_t = (args*) _args;
 	char str[1001], *token;
 	int i, j;
+	bool repete = false;
     //printf("ID:%d estou aqui (normaliza_colun)\n", args_t->id);
     for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
         token = strtok(str, ",");
         for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
                 //printf("\ntoken: %s, j=%d\n", token, j);
             switch (normalize_info_date(*args_t, token, j + 1)) {
-                case HOLD : j -= 1; //to do
-                           //printf("HOLD\n");
+                case HOLD : j--; //to do
+                           printf("HOLD\n");
+                           system("pause");
                             //INSTALL_DEBUG
+                            repete = true;
                     break;
                 case PROCEED ://printf("PROCEED\n");
                              //INSTALL_DEBUG
+                             repete = false;
                     break;
             }
-            token = strtok(NULL, ",");
+            if (!repete)token = strtok(NULL, ",");
         }
         //printf("sair\n");
     }
@@ -195,7 +199,7 @@ int main ()
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path arq com a 2.matriz
 
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
-    pthread_join(thread_1, NULL);
+    //pthread_join(thread_1, NULL); //go to, so funciona se usar
 
     //print_responsabilidade_thread(_args);
     /*Repassa função de trabalho*/
