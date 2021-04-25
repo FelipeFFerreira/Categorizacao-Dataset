@@ -50,6 +50,7 @@ struct args_arq {
     FILE * arq_main;
     tarefas thread_buffer[PROFUNDIDADE_BF][NUM_THREADS];
     int lin_job_atual;
+    int lin_job_pendente;
 };
 
 typedef struct {

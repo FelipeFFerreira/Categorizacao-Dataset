@@ -98,4 +98,6 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
             _args_main->thread_buffer[i][j].state = TO_DO;
         }
 	_args_main->arq_main = open_arquivo("C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\principal-normalizado.csv", "w");
+	_args_main->lin_job_pendente = 0;
+	_args_main->lin_job_atual = 0;
 }

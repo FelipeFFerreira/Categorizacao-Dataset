@@ -55,7 +55,7 @@ void * solicitacao_arquivo(void * argsArq)
 	int i = 0, j = 0;
 
 	while (i < N) {
-        _argssArq->lin_job_atual = i;
+        _argssArq->lin_job_atual = i % PROFUNDIDADE_BF;
         while (j < NUM_THREADS) {
             //printf("[%d]%s\n", i,  _argssArq->thread_buffer[i % QTD_COLLUN_THREAD][j].word);
             if (_argssArq->thread_buffer[i % (PROFUNDIDADE_BF)][j].state == DONE) {
@@ -63,9 +63,10 @@ void * solicitacao_arquivo(void * argsArq)
                 fprintf(_argssArq->arq_main, "%s", _argssArq->thread_buffer[i % (PROFUNDIDADE_BF)][j].word);
                 _argssArq->thread_buffer[i % (PROFUNDIDADE_BF)][j].state = TO_DO;
                 j += 1;
+                _argssArq->lin_job_pendente = j;
             }
             //if (i > 500)return;
-            //printf("%d.[%d][%d]TH->ARQ> Aguardando..\n", i, i % PROFUNDIDADE_BF, j);
+            //printf("%d.[%d][%d]TH->ARQ> Aguardando linha:%d ..\n", i, i % PROFUNDIDADE_BF, j, _argssArq->lin_job_pendente);
         }
         j = 0;
         fprintf(_argssArq->arq_main, "\n");
@@ -158,7 +159,7 @@ void * normaliza_colun_date(void * _args)
             if (!repete)
                 token = strtok(NULL, ",");
         }
-        while (i != args_t->main_destino->lin_job_atual);
+        while (args_t->main_destino->thread_buffer[i % (PROFUNDIDADE_BF)][args_t->id - 1].state == DONE);
         strcpy(args_t->main_destino->thread_buffer[i % (PROFUNDIDADE_BF)][args_t->id - 1].word, word_job);
         args_t->main_destino->thread_buffer[i % (PROFUNDIDADE_BF)][args_t->id - 1].state = DONE;
 
@@ -222,7 +223,7 @@ int main ()
 		if (status_create(status = pthread_create((&_args[i].thread), NULL, normaliza_colun_date, (void *)&_args[i])));
 		else exit(0x555);
 	}
-
+    printf("Em execucao ...\n");
     /*Thered principal aguarda todas as thredes de trabalhos finalizarem*/
 	for(i = 0; i < NUM_THREADS; i++) {
 		pthread_join(_args[i].thread, NULL);
