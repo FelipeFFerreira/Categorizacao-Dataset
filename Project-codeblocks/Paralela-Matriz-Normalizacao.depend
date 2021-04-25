@@ -42,7 +42,7 @@
 1619041996 c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.h
 	<stdbool.h>
 
-1619054787 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
+1619377284 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
 	"lista_th.h"
 	<stdlib.h>
 	<stdio.h>
@@ -64,7 +64,7 @@
 	<semaphore.h>
 	"../lib_lista_int/lista.h"
 
-1619375810 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1619377534 source:c:\github\paralela-matriz-normalizacao\src\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

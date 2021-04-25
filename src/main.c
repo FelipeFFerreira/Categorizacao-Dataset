@@ -87,12 +87,9 @@ static void add_lst_info_distinct(lst_ptr_th * l, char * str)
 	lst_info_th info_t;
 	int id_t = 0;
 	strcpy(info_t.word, str);
-
-
 	if (!lst_existing_th(*l, info_t, &id_t)) {
 		info_t.id = id_t;
 		lst_ins_th(l, info_t);
-
 	}
 }
 
@@ -118,7 +115,7 @@ static int normalize_info_date(args args_t, char * str, int colun, int * _id_wor
 
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
-        if (id != 0) {
+        if (id != -1) {
             *_id_word = id;
             fprintf(args_t.fptr_destinos[colun_fptr], "%d, %s\n", id, info_t.word); //to do, quando id == 0
             return PROCEED;
@@ -142,7 +139,6 @@ void * normaliza_colun_date(void * _args)
     for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
         token = strtok(str, ",");
         for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
-
             switch (normalize_info_date(*args_t, token, j + 1, &id_word)) {
                 case HOLD : j--; //to do
                            //printf("HOLD\n");
@@ -188,7 +184,6 @@ void * ler_matriz_entrada(void * args)
 		token = strtok(str, ",");
 		for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
 			add_lst_info_distinct(&colun_date[j], token);
-			//printf("%s\n", token);
 			token = strtok(NULL, ",");
 		}
 	}

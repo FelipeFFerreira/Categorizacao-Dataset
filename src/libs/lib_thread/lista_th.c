@@ -51,7 +51,7 @@ void lst_print_th(lst_ptr_th l) {
 
 bool lst_existing_th(lst_ptr_th l, lst_info_th x, int * id)
 {
-    int count = 0;
+    int count = -1;
     while (l != NULL) {
         if (!strcmp(l->dado.word, x.word))
             return true;
