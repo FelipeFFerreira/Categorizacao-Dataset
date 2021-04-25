@@ -132,7 +132,7 @@ void * normaliza_colun_date(void * _args)
 {
     //pthread_mutex_lock(&(mutex));
 	args * args_t = (args*) _args;
-	char str[1001], word[100], word_job[700] = "", *token;
+	char str[1001], word[200], word_job[700] = "", *token;
 	int i, j, id_word;
 	bool repete = false;
     //printf("ID:%d estou aqui (normaliza_colun)\n", args_t->id);
@@ -146,7 +146,10 @@ void * normaliza_colun_date(void * _args)
                     break;
                 case PROCEED ://printf("PROCEED\n");
                                 repete = false;
-                                sprintf(word, "%d,", id_word);
+                                if (id_word == 0)
+                                    sprintf(word, "%s,", token);
+                                else
+                                    sprintf(word, "%d,", id_word);
                                 strcat(word_job, word);
                     break;
                 case NEXT :

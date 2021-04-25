@@ -64,7 +64,7 @@
 	<semaphore.h>
 	"../lib_lista_int/lista.h"
 
-1619377534 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1619378684 source:c:\github\paralela-matriz-normalizacao\src\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
