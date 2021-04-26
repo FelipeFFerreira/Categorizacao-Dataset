@@ -1,16 +1,13 @@
 
-/* lista.c
- *
- * Implementação das operações sobre o TAD lista ordenada implementada
- * de forma encadeada.
- *
+/* lista_th.c
  *
  */
 
-#include "lista_th.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "lista_th.h"
+
 
 void lst_init_th(lst_ptr_th * l) {
     *l = NULL;

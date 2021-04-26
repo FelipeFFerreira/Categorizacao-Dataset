@@ -1,9 +1,8 @@
 /* threads.h
  *
  * Definição do TAD para operação com threads e funçoes especificas
- * sobre o arquivo main.c, como também os protótipo das operações sobre
+ * sobre o arquivo threads.c, como também os protótipo das operações sobre
  * esse TAD.
- *
  */
 
 #ifndef _THREADS_H
@@ -18,19 +17,13 @@
 
 #define NUM_THREADS 6 //Defina a quantidade de threads a serem utilizadas.
 #define N 1000
- //DEFINA O TAMANO DA MATRIZ AQUI
-#define LEN 5
 #define QTD_COLLUN 24
 #define QTD_COLLUN_THREAD 4
 #define PROFUNDIDADE_BF 4
 
 /*semaphoro controle de IO para thread especificas de IO*/
-#define WAIT 0
-#define READY 1
-#define EXECUTED -1
 #define DONE 1
 #define TO_DO 0
-
 #define BLOCK 1
 #define LIVRE 0
 
@@ -49,8 +42,6 @@ struct args_arq {
     int id;
     FILE * arq_main;
     tarefas thread_buffer[PROFUNDIDADE_BF][NUM_THREADS];
-    int lin_job_atual;
-    int lin_job_pendente;
 };
 
 typedef struct {
@@ -62,16 +53,11 @@ typedef struct {
     ptr_args_arq main_destino;
 }args;
 
-
-void print_matriz(char * dados[N][LEN][QTD_COLLUN]);
-
-void print_colun_matriz(char dados[][LEN][QTD_COLLUN], int j);
-
-FILE *open_arquivo(char * str, char * modo);
-
 void print_responsabilidade_thread(args * _args);
 
 void create_threads(args * _args, int n, char *, ptr_args_arq);
 
 void thread_jobs(args * _args, int, int, ptr_args_arq);
+
+FILE *open_arquivo(char * str, char * modo);
 #endif //_THREADS_H
