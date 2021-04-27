@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define NOT_EXIST -1
+
 typedef struct
 {
 	char word[300];
