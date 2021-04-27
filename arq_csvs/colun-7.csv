@@ -1,5 +1,5 @@
 tipooperacao,
-0,
-1,
-2,
-3,
+0,tipooperacao
+1,Marinha
+2,Movimentação da Carga
+3,Apoio
