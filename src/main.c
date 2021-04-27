@@ -1,66 +1,63 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include "libs/lib_lista_int/lista.h"
-#include "libs/lib_thread/lista_th.h"
-#include "libs/lib_thread/threads.h"
-
-//#define INSTALL_OMP //Install_openmp
-#define INSTALL_DEBUG exit(0xA);
-
-#ifdef INSTALL_OMP
-	#include <omp.h>
-#endif
-
-#define HOLD 0
-#define PROCEED 1
-#define NEXT 2
+#include "main.h"
 
 typedef struct {
 	FILE * fptr;
 }path_arq; //struct para captura da matriz de entrada
 
-path_arq path_arq_t[1];
-
-
  ///* Regiao de Variaves Globais no Escopo main.c *
 static lst_ptr_th colun_date[QTD_COLLUN];
 static char arq_origem[] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv";
-pthread_mutex_t mutex;
+static pthread_mutex_t mutex;
+static char dataset_data[N][QTD_COLLUN][N];
+static char dataset_normalizado[N][QTD_COLLUN][N];
+static path_arq path_arq_t[1];
 
 
 /// *Lidar com controle de escrita do arquivo de saida principal*
 static void * solicitacao_arquivo(void * argsArq)
 {
 	ptr_args_arq _argssArq = (ptr_args_arq) argsArq;
-	int i = 0, j = 0;
+	int i, j;
 
-	while (i < N) {
-        while (j < NUM_THREADS) {
-            if (_argssArq->thread_buffer[i % (PROFUNDIDADE_BF)][j].state == DONE) {
-                fprintf(_argssArq->arq_main, "%s", _argssArq->thread_buffer[i % (PROFUNDIDADE_BF)][j].word);
-                _argssArq->thread_buffer[i % (PROFUNDIDADE_BF)][j].state = TO_DO;
-                j += 1;
-            }
-        }
-        j = 0;
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < QTD_COLLUN; j++)
+            fprintf(_argssArq->arq_main, "%s", dataset_normalizado[i][j]);
         fprintf(_argssArq->arq_main, "\n");
-        i += 1;
-	}
-	fclose(_argssArq->arq_main);
+    }
+    fclose(_argssArq->arq_main);
+
 	return 0;
+}
+
+static void * solicitacao_arquivo_job(void * _args)
+{
+    args * _args_t = (args*) _args;
+
+    lst_ptr l = _args_t->lista;
+
+    while (l != NULL) {
+        lst_ptr_th p = colun_date[l->dado - 1];
+        while (p != NULL) {
+            if (p->dado.id == 0)
+                fprintf(_args_t->fptr_destinos[(l->dado - 1) % QTD_COLLUN_THREAD], "%s,,\n", p->dado.word);
+            fprintf(_args_t->fptr_destinos[(l->dado - 1) % QTD_COLLUN_THREAD], "%d,%s,%d\n", p->dado.id, p->dado.word, p->dado.count);
+            p = p->prox;
+        }
+        l = l->prox;
+    }
+    return 0;
 }
 
 /// *Adicionar infos das colunas do arquivo de entrada*
 static void add_lst_info_distinct(lst_ptr_th * l, char * str)
 {
+    int id_t = 0;
 	lst_info_th info_t;
-	int id_t = 0;
 	strcpy(info_t.word, str);
+
 	if (!lst_existing_th(*l, info_t, &id_t)) {
 		info_t.id = id_t;
+        info_t.count = 1;
 		lst_ins_th(l, info_t);
 	}
 }
@@ -79,65 +76,52 @@ static bool is_my_job(lst_ptr l, int colun)
 /// *normaliza info separadamente do arquivo de entrada principal*
 static int normalize_info_date(args args_t, char * str, int colun, int * _id_word)
 {
-    //pthread_mutex_lock(&(mutex_1));
     lst_info_th info_t;
-    int colun_fptr = (colun % QTD_COLLUN_THREAD) == 0 ? QTD_COLLUN_THREAD - 1 : (colun % QTD_COLLUN_THREAD) - 1;
 	strcpy(info_t.word, str);
 
 	if (is_my_job(args_t.lista, colun)) {
         int id = lst_info_id_th(colun_date[colun - 1], info_t);
         if (id != -1) {
             *_id_word = id;
-            fprintf(args_t.fptr_destinos[colun_fptr], "%d, %s\n", id, info_t.word);
             return PROCEED;
         }
         else
             return HOLD;
 	}
-	//pthread_mutex_unlock(&(mutex_1));
 	return NEXT;
 }
 
 /// *normaliza info unico do arquivo de entrada em unica saida principal*
-void * normaliza_colun_date(void * _args)
+static void * normaliza_colun_date(void * _args)
 {
-    //pthread_mutex_lock(&(mutex));
 	args * args_t = (args*) _args;
-	char str[1001], word[200], word_job[700] = "", *token;
-	int i, j, id_word;
-	bool repete = false;
+	char word[200];
+	int i, id_word;
+    lst_ptr l = args_t->lista;
 
-    for (i = 0; fscanf(args_t->fptr_origem, " %500[^\n]s", str) != EOF && i < N; i++) {
-        token = strtok(str, ",");
-        for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
-            switch (normalize_info_date(*args_t, token, j + 1, &id_word)) {
-                case HOLD : j--; //to do
-                    repete = true;
-                break;
+    while (l != NULL) {
+        for (i = 0; i < N; i++) {
+            switch (normalize_info_date(*args_t, dataset_data[i][l->dado - 1], l->dado, &id_word)) {
                 case PROCEED :
-                    repete = false;
-                    if (id_word == 0)
-                        sprintf(word, "%s,", token);
-                    else
+                    if (id_word == 0) {
+                        sprintf(word, "%s,", dataset_data[i][l->dado - 1]);
+                        strcpy(dataset_normalizado[i][l->dado - 1], word);
+                    }
+                    else {
                         sprintf(word, "%d,", id_word);
-                    strcat(word_job, word);
+                        strcpy(dataset_normalizado[i][l->dado - 1], word);
+                    }
                 break;
                 case NEXT :
-                    break;
-            }
-            if (!repete)
-                token = strtok(NULL, ",");
+                break;
+             }
         }
-        while (args_t->main_destino->thread_buffer[i % (PROFUNDIDADE_BF)][args_t->id - 1].state == DONE);
-        strcpy(args_t->main_destino->thread_buffer[i % (PROFUNDIDADE_BF)][args_t->id - 1].word, word_job);
-        args_t->main_destino->thread_buffer[i % (PROFUNDIDADE_BF)][args_t->id - 1].state = DONE;
-        sprintf(word_job, "");
+        l = l->prox;
     }
-    //pthread_mutex_unlock(&(mutex));
     return 0;
 }
 
-void * ler_matriz_entrada(void * args)
+static void * ler_matriz_entrada(void * args)
 {
 	path_arq * _path_arq_t = (path_arq*) args;
 	char str[1001], *token;
@@ -149,6 +133,7 @@ void * ler_matriz_entrada(void * args)
 	for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
 		token = strtok(str, ",");
 		for (j = 0; token != NULL && j < QTD_COLLUN; j++) {
+			strcpy(dataset_data[i][j], token);
 			add_lst_info_distinct(&colun_date[j], token);
 			token = strtok(NULL, ",");
 		}
@@ -172,10 +157,11 @@ int main ()
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
 
     tempo = clock();
+    printf("\nEm execucao ...\n");
+
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
-    if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
-    else exit(0xF);
+    pthread_join(thread_1, NULL);
 
     /*Repassa função de trabalho*/
 	for(i = 0; i < NUM_THREADS; i++) {
@@ -183,12 +169,24 @@ int main ()
 		else exit(0xFF);
 	}
 
-    printf("\nEm execucao ...\n");
-    /*Thered principal aguarda todas as thredes de trabalhos finalizarem*/
+    /*Thread principal aguarda todas as thredes de trabalhos finalizarem*/
 	for(i = 0; i < NUM_THREADS; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
+
+    if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
+    else exit(0xF);
 	pthread_join(args_main.thread, NULL);
+
+	for (i = 0; i < NUM_THREADS; i++) {
+        if (status_create( status = pthread_create((&_args[i].thread), NULL, solicitacao_arquivo_job, (void *)&_args[i])));
+        else exit(0xF);
+	}
+
+    /*Thread principal aguarda todas as thredes de trabalhos finalizarem*/
+	for(i = 0; i < NUM_THREADS; i++) {
+		pthread_join(_args[i].thread, NULL);
+	}
 
     printf("\nTerminando processo ...\n");
 	printf("\n\n[Tempo Total Do Processo: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);

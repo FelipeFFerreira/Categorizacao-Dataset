@@ -5,8 +5,7 @@
 
 #include <stdlib.h>
 #include "threads.h"
-#include "lista_th.h"
-#include "../lib_lista_int/lista.h"
+
 
 void print_responsabilidade_thread(args * _args)
 {

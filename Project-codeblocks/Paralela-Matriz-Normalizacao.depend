@@ -33,38 +33,40 @@
 	"../main.h"
 	<omp.h>
 
-1619049792 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.c
+1619421367 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.c
 	"lista.h"
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
 
-1619041996 c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.h
+1619421367 c:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.h
 	<stdbool.h>
 
-1619420258 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
+1619551571 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
+	"lista_th.h"
+
+1619551590 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.h
+	<stdbool.h>
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
-	"lista_th.h"
 
-1619418316 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.h
-	<stdbool.h>
-
-1619420440 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
+1619551553 source:c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
 	<stdlib.h>
 	"threads.h"
-	"lista_th.h"
-	"../lib_lista_int/lista.h"
 
-1619420415 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
+1619551529 c:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
 	<stdbool.h>
 	<stdio.h>
 	<pthread.h>
 	<semaphore.h>
+	"lista_th.h"
 	"../lib_lista_int/lista.h"
 
-1619420619 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1619556017 source:c:\github\paralela-matriz-normalizacao\src\main.c
+	"main.h"
+
+1619551079 c:\github\paralela-matriz-normalizacao\src\main.h
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -73,8 +75,5 @@
 	"libs/lib_lista_int/lista.h"
 	"libs/lib_thread/lista_th.h"
 	"libs/lib_thread/threads.h"
-	<omp.h>
-
-1619038929 c:\github\paralela-matriz-normalizacao\src\main.h
 	<omp.h>
 

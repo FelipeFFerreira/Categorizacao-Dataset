@@ -7,12 +7,17 @@
 
 #ifndef _LISTA_TH_H
 #define _LISTA_TH_H
+
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef struct
 {
 	char word[300];
-	int id;
+	unsigned id;
+	unsigned int count;
 }info_date;
 typedef info_date lst_info_th;
 
