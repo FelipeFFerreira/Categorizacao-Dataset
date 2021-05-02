@@ -7,7 +7,8 @@ typedef struct {
  ///* Regiao de Variaves Globais no Escopo main.c *
 static lst_ptr_th colun_date[QTD_COLLUN];
 static char arq_origem[] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv";
-static pthread_mutex_t mutex;
+//static pthread_mutex_t mutex;
+static sem_t mutexs[NUM_THREADS];
 char*** dataset_data;
 char*** dataset_normalizado;
 static path_arq path_arq_t[1];
@@ -49,7 +50,7 @@ static void free_memory_dataset(unsigned int n)
     for (unsigned int i = 0; i < n; i++) {
         for (unsigned int j = 0; j < n; j++) {
             free (dataset_data[i][j]);
-            free (dataset_data[i][j]);
+            free (dataset_normalizado[i][j]);
         }
     }
 }
@@ -60,9 +61,9 @@ static void free_memory_dataset(unsigned int n)
 static void * solicitacao_arquivo(void * argsArq)
 {
 	ptr_args_arq _argssArq = (ptr_args_arq) argsArq;
-	int i, j;
+	tipoDado i, j;
 
-    for (i = 0; i < N; i++) {
+    for (i = 0; i < N_TOTAL; i++) {
         for (j = 0; j < QTD_COLLUN; j++) {
             if (strcmp(dataset_normalizado[i][j], "") != 0)
                 fprintf(_argssArq->arq_main, "%s", dataset_normalizado[i][j]);
@@ -145,6 +146,8 @@ static void * normaliza_colun_date(void * _args)
 	int i, id_word;
     lst_ptr l = args_t->lista;
 
+    sem_wait(&mutexs[args_t->id - 1]);
+
     while (l != NULL) {
 
     #ifdef INSTALL_OMP
@@ -171,6 +174,7 @@ static void * normaliza_colun_date(void * _args)
         }
         l = l->prox;
     }
+    sem_post(&mutexs[args_t->id - 1]);
     return 0;
 }
 
@@ -184,6 +188,10 @@ static void * ler_matriz_entrada(void * args)
 	for (i = 0; i < QTD_COLLUN; i++)
         lst_init_th(&colun_date[i]);
     do {
+        if (count != 0) {
+            free_memory_dataset(N);
+            malloc_memory_dataset(N);
+        }
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
             for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
@@ -193,7 +201,7 @@ static void * ler_matriz_entrada(void * args)
             }
         }
         count += i;
-    } while (count < QTD_TOTAL);
+    } while (count < N_TOTAL);
 	return 0;
 }
 
@@ -216,7 +224,7 @@ int main ()
 	args _args[NUM_THREADS]; //numero de args por threads de CPU
 	struct args_arq args_main;
 	pthread_t thread_1; //thread responsavel pelo arquivo de entrada
-    create_threads(_args, NUM_THREADS, arq_origem, &args_main);
+    create_threads(_args, NUM_THREADS, arq_origem, &args_main, mutexs);
     thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
     print_responsabilidade_thread(_args);
 

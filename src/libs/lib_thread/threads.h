@@ -49,13 +49,12 @@ typedef struct {
 	pthread_t thread;
     lst_ptr lista;
     FILE * fptr_destinos[QTD_COLLUN_THREAD];
-    FILE * fptr_origem;
     ptr_args_arq main_destino;
 }args;
 
 void print_responsabilidade_thread(args * _args);
 
-void create_threads(args * _args, int n, char *, ptr_args_arq);
+void create_threads(args * _args, int n, char *, ptr_args_arq, sem_t *);
 
 void thread_jobs(args * _args, int, int, ptr_args_arq);
 

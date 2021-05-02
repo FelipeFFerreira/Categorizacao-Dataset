@@ -27,14 +27,14 @@ bool status_create(int status)
 	return true;
 }
 
-void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_main)
+void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_main, sem_t * _mutexs)
 {
     int i;
     /*Repassa o identificador para as threads*/
 	for(i = 0; i < n; i++) {
 		lst_init(&_args[i].lista);
 		_args[i].id = i + 1;
-		_args[i].fptr_origem = open_arquivo(arq_origem, "r");
+		sem_init(&_mutexs[i], 0, 1);
 	}
 	_args_main->id = i;
 }
