@@ -10,7 +10,7 @@
 #include "libs/lib_thread/lista_th.h"
 #include "libs/lib_thread/threads.h"
 
-//#define INSTALL_OMP //Install_openmp
+#define INSTALL_OMP //Install_openmp
 #define INSTALL_DEBUG exit(0xA);
 
 #ifdef INSTALL_OMP

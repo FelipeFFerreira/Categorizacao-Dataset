@@ -18,10 +18,19 @@ static void malloc_memory_dataset(unsigned int n)
     dataset_data =  (char ***) malloc(n * sizeof(char **));
     dataset_normalizado = malloc(n * sizeof(char **));
     unsigned int i;
+
+    #ifdef INSTALL_OMP
+        #pragma omp parallel for
+    #endif // INSTALL_OMP
     for (i = 0; i < n; i++) {
         dataset_data[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
         dataset_normalizado[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
     }
+
+
+    #ifdef INSTALL_OMP
+        #pragma omp parallel for
+    #endif // INSTALL_OMP
     for (i = 0; i < n; i++) {
         for (unsigned int j = 0; j < QTD_COLLUN; j++) {
             dataset_data[i][j] =  (char*) malloc(QTD_WORD * sizeof(char));
@@ -34,6 +43,9 @@ static void malloc_memory_dataset(unsigned int n)
 
 static void free_memory_dataset(unsigned int n)
 {
+    #ifdef INSTALL_OMP
+        #pragma omp parallel for
+    #endif // INSTALL_OMP
     for (unsigned int i = 0; i < n; i++) {
         for (unsigned int j = 0; j < n; j++) {
             free (dataset_data[i][j]);
@@ -134,6 +146,10 @@ static void * normaliza_colun_date(void * _args)
     lst_ptr l = args_t->lista;
 
     while (l != NULL) {
+
+    #ifdef INSTALL_OMP
+        #pragma omp parallel for
+    #endif // INSTALL_OMP
         for (i = 0; i < N; i++) {
             switch (normalize_info_date(*args_t, dataset_data[i][l->dado - 1], l->dado, &id_word)) {
                 case HOLD :
