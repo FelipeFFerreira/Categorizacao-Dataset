@@ -15,8 +15,8 @@ static path_arq path_arq_t[1];
 
 static void malloc_memory_dataset(unsigned int n)
 {
-    dataset_data =  (char ***) malloc(N * sizeof(char **));
-    dataset_normalizado = malloc(N * sizeof(char **));
+    dataset_data =  (char ***) malloc(n * sizeof(char **));
+    dataset_normalizado = malloc(n * sizeof(char **));
     unsigned int i;
     for (i = 0; i < n; i++) {
         dataset_data[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
@@ -52,7 +52,7 @@ static void * solicitacao_arquivo(void * argsArq)
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < QTD_COLLUN; j++) {
-            if (dataset_normalizado[i][j] != 0)
+            if (strcmp(dataset_normalizado[i][j], "") != 0)
                 fprintf(_argssArq->arq_main, "%s", dataset_normalizado[i][j]);
             else j--;
         }
@@ -162,18 +162,22 @@ static void * ler_matriz_entrada(void * args)
 {
 	path_arq * _path_arq_t = (path_arq*) args;
 	char str[1001], *token;
+	unsigned int i;
+	tipoDado count = 0;
 
-	for (int i = 0; i < QTD_COLLUN; i++)
+	for (i = 0; i < QTD_COLLUN; i++)
         lst_init_th(&colun_date[i]);
-
-	for (int i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
-		token = strtok(str, ",");
-		for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
-			strcpy(dataset_data[i][j], token);
-			add_lst_info_distinct(&colun_date[j], token);
-			token = strtok(NULL, ",");
-		}
-	}
+    do {
+        for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
+            token = strtok(str, ",");
+            for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
+                strcpy(dataset_data[i][j], token);
+                add_lst_info_distinct(&colun_date[j], token);
+                token = strtok(NULL, ",");
+            }
+        }
+        count += i;
+    } while (count < QTD_TOTAL);
 	return 0;
 }
 
@@ -200,14 +204,13 @@ int main ()
     thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
     print_responsabilidade_thread(_args);
 
-    malloc_memory_dataset(N);
-    teste();
 
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
 
     tempo = clock();
     printf("\nEm execucao ...\n");
 
+    malloc_memory_dataset(N);
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
 
