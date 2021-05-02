@@ -30,4 +30,3 @@ bool lst_rem(lst_ptr *, lst_info_int);
 void lst_print(lst_ptr);
 
 #endif
-

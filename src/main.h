@@ -21,5 +21,9 @@
 #define PROCEED 1
 #define NEXT 2
 
+#define N 1000
+#define N_TOTAL 1000
+#define QTD_WORD 1000
+
 
 #endif //_MAIN_H

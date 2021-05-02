@@ -1,4 +1,3 @@
-
 /* lista.c
  *
  * Implementação das operações sobre o TAD lista ordenada implementada

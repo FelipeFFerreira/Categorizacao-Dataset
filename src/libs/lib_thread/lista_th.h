@@ -47,4 +47,3 @@ bool lst_existing_th(lst_ptr_th l, lst_info_th, int *);
 /* Retorna id de uma informaçao da lista*/
 unsigned int lst_info_id_th(lst_ptr_th l, lst_info_th x);
 #endif
-

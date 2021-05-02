@@ -8,9 +8,40 @@ typedef struct {
 static lst_ptr_th colun_date[QTD_COLLUN];
 static char arq_origem[] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv";
 static pthread_mutex_t mutex;
-static char dataset_data[N][QTD_COLLUN][N];
-static char dataset_normalizado[N][QTD_COLLUN][N] = {};
+char*** dataset_data;
+char*** dataset_normalizado;
 static path_arq path_arq_t[1];
+
+
+static void malloc_memory_dataset(unsigned int n)
+{
+    dataset_data =  (char ***) malloc(N * sizeof(char **));
+    dataset_normalizado = malloc(N * sizeof(char **));
+    unsigned int i;
+    for (i = 0; i < n; i++) {
+        dataset_data[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
+        dataset_normalizado[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
+    }
+    for (i = 0; i < n; i++) {
+        for (unsigned int j = 0; j < QTD_COLLUN; j++) {
+            dataset_data[i][j] =  (char*) malloc(QTD_WORD * sizeof(char));
+            dataset_data[i][j][0] = 0;
+            dataset_normalizado[i][j] =  (char*) malloc(QTD_WORD * sizeof(char));
+            dataset_normalizado[i][j][0] = 0;
+        }
+    }
+}
+
+static void free_memory_dataset(unsigned int n)
+{
+    for (unsigned int i = 0; i < n; i++) {
+        for (unsigned int j = 0; j < n; j++) {
+            free (dataset_data[i][j]);
+            free (dataset_data[i][j]);
+        }
+    }
+}
+
 
 
 /// *Lidar com controle de escrita do arquivo de saida principal*
@@ -21,7 +52,7 @@ static void * solicitacao_arquivo(void * argsArq)
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < QTD_COLLUN; j++) {
-            if (strcmp(dataset_normalizado[i][j], "") != 0)
+            if (dataset_normalizado[i][j] != 0)
                 fprintf(_argssArq->arq_main, "%s", dataset_normalizado[i][j]);
             else j--;
         }
@@ -148,9 +179,10 @@ static void * ler_matriz_entrada(void * args)
 
 void teste()
 {
+    char a = dataset_data[0][0][0];
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < QTD_COLLUN; j++)
-            if (strcmp(dataset_normalizado, "") == 0)
+            if (strcmp(dataset_normalizado[i][j], "") == 0)
                 printf("%s,boa\n", dataset_normalizado[i][j]);
             else printf("%s,ferro\n", dataset_normalizado[i][j]);
     }
@@ -167,6 +199,9 @@ int main ()
     create_threads(_args, NUM_THREADS, arq_origem, &args_main);
     thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
     print_responsabilidade_thread(_args);
+
+    malloc_memory_dataset(N);
+    teste();
 
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
 
