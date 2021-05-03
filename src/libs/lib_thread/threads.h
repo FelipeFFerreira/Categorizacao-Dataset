@@ -31,6 +31,11 @@ typedef unsigned long long int tipoDado;
 //enum states {AGUARDANDO = 0, PROCESSADO} state_colun;
 
 typedef struct {
+    sem_t mutexs_threads[NUM_THREADS + 1];
+    sem_t mutexs_process[NUM_THREADS + 1];
+}controles;
+
+typedef struct {
     char word[700];
     bool state;
     bool bloqueio;
@@ -52,9 +57,16 @@ typedef struct {
     ptr_args_arq main_destino;
 }args;
 
+typedef struct {
+    args _my_set[NUM_THREADS];
+
+}args_memory;
+
 void print_responsabilidade_thread(args * _args);
 
-void create_threads(args * _args, int n, char *, ptr_args_arq, sem_t *);
+void create_threads(args * _args, int n, char *, ptr_args_arq, controles *);
+
+void create_threads_mmory_set(args_memory *, unsigned int);
 
 void thread_jobs(args * _args, int, int, ptr_args_arq);
 

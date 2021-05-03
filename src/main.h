@@ -10,7 +10,7 @@
 #include "libs/lib_thread/lista_th.h"
 #include "libs/lib_thread/threads.h"
 
-#define INSTALL_OMP //Install_openmp
+//#define INSTALL_OMP //Install_openmp
 #define INSTALL_DEBUG exit(0xA);
 
 #ifdef INSTALL_OMP
@@ -21,8 +21,8 @@
 #define PROCEED 1
 #define NEXT 2
 
-#define N 10000
-#define N_TOTAL 10000
+#define N 1000
+#define N_TOTAL 40000
 #define QTD_WORD 1000
 
 

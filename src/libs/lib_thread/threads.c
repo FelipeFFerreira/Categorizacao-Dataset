@@ -27,15 +27,31 @@ bool status_create(int status)
 	return true;
 }
 
-void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_main, sem_t * _mutexs)
+
+void create_threads_mmory_set(args_memory * _m, unsigned int n)
+{
+    unsigned int i;
+	for(i = 0; i < NUM_THREADS; i++) {
+        lst_init(&_m->_my_set[i].lista);
+	}
+
+	for (i = 0; i < n; i++) {
+        lst_ins(&_m->_my_set[i % NUM_THREADS].lista, i);
+	}
+}
+
+void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_main, controles * _control_process)
 {
     int i;
     /*Repassa o identificador para as threads*/
 	for(i = 0; i < n; i++) {
 		lst_init(&_args[i].lista);
 		_args[i].id = i + 1;
-		sem_init(&_mutexs[i], 0, 1);
+		sem_init(&_control_process->mutexs_threads[i], 0, 1);
+		sem_init(&_control_process->mutexs_process[i], 0, 1);
 	}
+	sem_init(&_control_process->mutexs_threads[i], 0, 1);
+    sem_init(&_control_process->mutexs_process[i], 0, 1);
 	_args_main->id = i;
 }
 

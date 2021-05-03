@@ -7,25 +7,29 @@ typedef struct {
  ///* Regiao de Variaves Globais no Escopo main.c *
 static lst_ptr_th colun_date[QTD_COLLUN];
 static char arq_origem[] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv";
-//static pthread_mutex_t mutex;
-static sem_t mutexs[NUM_THREADS];
-char*** dataset_data;
-char*** dataset_normalizado;
+static pthread_mutex_t mutex;
+
+static controles control_process;
+
+static char*** dataset_data;
+static char*** dataset_normalizado;
 static path_arq path_arq_t[1];
+args_memory my_set_memory;
 
 
-static void malloc_memory_dataset(unsigned int n)
+
+static void calloc_memory_dataset(unsigned int n)
 {
-    dataset_data =  (char ***) malloc(n * sizeof(char **));
-    dataset_normalizado = malloc(n * sizeof(char **));
+    dataset_data =  (char ***) calloc(n, sizeof(char **));
+    dataset_normalizado = calloc(n, sizeof(char **));
     unsigned int i;
 
     #ifdef INSTALL_OMP
         #pragma omp parallel for
     #endif // INSTALL_OMP
     for (i = 0; i < n; i++) {
-        dataset_data[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
-        dataset_normalizado[i] = (char**) malloc(QTD_COLLUN * sizeof(char *));
+        dataset_data[i] = (char**) calloc(QTD_COLLUN, sizeof(char *));
+        dataset_normalizado[i] = (char**) calloc(QTD_COLLUN, sizeof(char *));
     }
 
 
@@ -34,47 +38,43 @@ static void malloc_memory_dataset(unsigned int n)
     #endif // INSTALL_OMP
     for (i = 0; i < n; i++) {
         for (unsigned int j = 0; j < QTD_COLLUN; j++) {
-            dataset_data[i][j] =  (char*) malloc(QTD_WORD * sizeof(char));
+            dataset_data[i][j] =  (char*) calloc(QTD_WORD, sizeof(char));
             dataset_data[i][j][0] = 0;
-            dataset_normalizado[i][j] =  (char*) malloc(QTD_WORD * sizeof(char));
+            dataset_normalizado[i][j] =  (char*) calloc(QTD_WORD, sizeof(char));
             dataset_normalizado[i][j][0] = 0;
         }
     }
 }
 
-static void free_memory_dataset(unsigned int n)
+static void clear_memory_dataset(void * _args)
 {
-    #ifdef INSTALL_OMP
-        #pragma omp parallel for
+    #ifndef INSTALL_OMP
+        #pragma cmp parallel for
+        unsigned int i;
+        for (i = 0; i < N; i++) {
+            for (unsigned int j = 0; j < QTD_COLLUN; j++) {
+                strcpy(dataset_normalizado[i][j], "");
+                strcpy(dataset_data[i][j], "");
+            }
+        }
     #endif // INSTALL_OMP
-    for (unsigned int i = 0; i < n; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            free (dataset_data[i][j]);
-            free (dataset_normalizado[i][j]);
+    #ifdef INSTALL_OMP
+    args * _m = (args *) _args;
+    lst_ptr l = _m->lista;
+    while (l != NULL) {
+        for (unsigned int j = 0; j < QTD_COLLUN; j++) {
+            int debug = l->dado;
+            strcpy(dataset_data[l->dado][j], "");
+            strcpy(dataset_normalizado[l->dado][j], "");
+            //lst_print(l);
+            //printf("\n");
         }
+        l = l->prox;
     }
+    #endif // INSTALL_OMP
 }
 
 
-
-/// *Lidar com controle de escrita do arquivo de saida principal*
-static void * solicitacao_arquivo(void * argsArq)
-{
-	ptr_args_arq _argssArq = (ptr_args_arq) argsArq;
-	tipoDado i, j;
-
-    for (i = 0; i < N_TOTAL; i++) {
-        for (j = 0; j < QTD_COLLUN; j++) {
-            if (strcmp(dataset_normalizado[i][j], "") != 0)
-                fprintf(_argssArq->arq_main, "%s", dataset_normalizado[i][j]);
-            else j--;
-        }
-        fprintf(_argssArq->arq_main, "\n");
-    }
-    fclose(_argssArq->arq_main);
-
-	return 0;
-}
 
 static void * solicitacao_arquivo_job(void * _args)
 {
@@ -123,59 +123,135 @@ static bool is_my_job(lst_ptr l, int colun)
 /// *normaliza info separadamente do arquivo de entrada principal*
 static int normalize_info_date(args args_t, char * str, int colun, int * _id_word)
 {
-    lst_info_th info_t;
-	strcpy(info_t.word, str);
+    if (strcmp(str, "") != 0) {
+        lst_info_th info_t;
+        strcpy(info_t.word, str);
 
-	if (is_my_job(args_t.lista, colun)) {
-        int id = lst_info_id_th(colun_date[colun - 1], info_t);
-        if (id != NOT_EXIST) {
-            *_id_word = id;
-            return PROCEED;
+        if (is_my_job(args_t.lista, colun)) {
+            int id = lst_info_id_th(colun_date[colun - 1], info_t);
+            if (id != NOT_EXIST) {
+                *_id_word = id;
+                return PROCEED;
+            }
+            else
+                return HOLD;
         }
-        else
-            return HOLD;
-	}
-	return NEXT;
+        return NEXT;
+    }
+    else return HOLD;
 }
+
 
 /// *normaliza info unico do arquivo de entrada em unica saida principal*
 static void * normaliza_colun_date(void * _args)
 {
+    //pthread_mutex_lock(&mutex);
 	args * args_t = (args*) _args;
 	char word[200];
-	int i, id_word;
-    lst_ptr l = args_t->lista;
+	tipoDado i, id_word, count = 0;
 
-    sem_wait(&mutexs[args_t->id - 1]);
-
-    while (l != NULL) {
-
-    #ifdef INSTALL_OMP
-        #pragma omp parallel for
-    #endif // INSTALL_OMP
-        for (i = 0; i < N; i++) {
-            switch (normalize_info_date(*args_t, dataset_data[i][l->dado - 1], l->dado, &id_word)) {
-                case HOLD :
-                    i--;
-                break;
-                case PROCEED :
-                    if (id_word == 0) {
-                        sprintf(word, "%s,", dataset_data[i][l->dado - 1]);
-                        strcpy(dataset_normalizado[i][l->dado - 1], word);
-                    }
-                    else {
-                        sprintf(word, "%d,", id_word);
-                        strcpy(dataset_normalizado[i][l->dado - 1], word);
-                    }
-                break;
-                case NEXT :
-                break;
-             }
+    do {
+        lst_ptr l = args_t->lista;
+        //printf("Threads=%d :Aguardando liberacao\n", args_t->id);
+        sem_wait(&control_process.mutexs_threads[args_t->id - 1]);
+        sem_wait(&control_process.mutexs_process[args_t->id - 1]);
+        //printf("Threads=%d :Prosegui\n", args_t->id);
+        while (l != NULL) {
+        #ifdef INSTALL_OMP
+            #pragma omp parallel for
+        #endif // INSTALL_OMP
+            for (i = 0; i < N;) {
+                switch (normalize_info_date(*args_t, dataset_data[i][l->dado - 1], l->dado, &id_word)) {
+                    case HOLD :
+                    break;
+                    case PROCEED :
+                        if (id_word == 0) {
+                            sprintf(word, "%s,", dataset_data[i][l->dado - 1]);
+                            strcpy(dataset_normalizado[i][l->dado - 1], word);
+                        }
+                        else {
+                            sprintf(word, "%d,", id_word);
+                            strcpy(dataset_normalizado[i][l->dado - 1], word);
+                        }
+                        i += 1;
+                    break;
+                    case NEXT :
+                        i += 1;
+                    break;
+                 }
+                 printf("count:%d, TH:%d, dataset[%d][%d]\n", count, args_t->id, i, l->dado - 1);
+            }
+            l = l->prox;
         }
-        l = l->prox;
-    }
-    sem_post(&mutexs[args_t->id - 1]);
+        count += i;
+        sem_post(&control_process.mutexs_process[args_t->id - 1]);
+        printf("Thread=%d, count:%d\n", args_t->id, count);
+    } while (count < N_TOTAL);
+    printf("Thread=%d, count:%d, sai\n", args_t->id, count);
+
+    //pthread_mutex_unlock(&mutex);
     return 0;
+}
+
+/// *Lidar com controle de escrita do arquivo de saida principal*
+static void * solicitacao_arquivo(void * argsArq)
+{
+	ptr_args_arq _argssArq = (ptr_args_arq) argsArq;
+	tipoDado i, j, count = 0;
+
+    do {
+        sem_wait(&control_process.mutexs_threads[NUM_THREADS]);
+        sem_wait(&control_process.mutexs_process[NUM_THREADS]);
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < QTD_COLLUN;) {
+                if (strcmp(dataset_normalizado[i][j], "") != 0) {
+                    fprintf(_argssArq->arq_main, "%s", dataset_normalizado[i][j]);
+                    j++;
+                }
+                //printf("[%d][%d]\n", i, j);
+            }
+            fprintf(_argssArq->arq_main, "\n");
+        }
+        count += i;
+        sem_post(&control_process.mutexs_process[NUM_THREADS]);
+        printf("Processei\n");
+    } while (count < N_TOTAL);
+    fclose(_argssArq->arq_main);
+	return 0;
+}
+
+
+static aguarda_processos_threads()
+{
+    for (unsigned int i = 0; i < NUM_THREADS + 1; i++)
+        sem_wait(&control_process.mutexs_process[i]);
+}
+
+static liberar_processos_threads()
+{
+    for (unsigned int i = 0; i < NUM_THREADS + 1; i++)
+        sem_post(&control_process.mutexs_process[i]);
+}
+
+static desbloqueio_threads()
+{
+    for (unsigned int i = 0; i < NUM_THREADS; i++)
+        sem_post(&control_process.mutexs_threads[i]);
+}
+
+static void clear_memory()
+{
+    #ifdef INSTALL_OMP
+    int status;
+    for (unsigned int i = 0; i < NUM_THREADS; i++) {
+        if (status_create( status = pthread_create((&my_set_memory._my_set[i].thread), NULL, clear_memory_dataset, (void *)&my_set_memory._my_set[i])));
+        else exit(0xF);
+	}
+    #endif // INSTALL_OMP
+    #ifndef INSTALL_OMP
+     clear_memory_dataset(NULL);
+    #endif // INSTALL_OMP
+
 }
 
 static void * ler_matriz_entrada(void * args)
@@ -188,9 +264,13 @@ static void * ler_matriz_entrada(void * args)
 	for (i = 0; i < QTD_COLLUN; i++)
         lst_init_th(&colun_date[i]);
     do {
-        if (count != 0) {
-            free_memory_dataset(N);
-            malloc_memory_dataset(N);
+        if (count != 0 ) {
+            printf("Aguardando Todos\n");
+            aguarda_processos_threads();
+            printf("Liberando Todos\n");
+            clear_memory();
+            liberar_processos_threads();
+            desbloqueio_threads();
         }
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
@@ -202,6 +282,9 @@ static void * ler_matriz_entrada(void * args)
         }
         count += i;
     } while (count < N_TOTAL);
+    //liberar_processos_threads();
+    //desbloqueio_threads();
+    printf("saindo");
 	return 0;
 }
 
@@ -217,6 +300,7 @@ void teste()
     system("pause");
 }
 
+
 int main ()
 {
 	int i, status;
@@ -224,22 +308,24 @@ int main ()
 	args _args[NUM_THREADS]; //numero de args por threads de CPU
 	struct args_arq args_main;
 	pthread_t thread_1; //thread responsavel pelo arquivo de entrada
-    create_threads(_args, NUM_THREADS, arq_origem, &args_main, mutexs);
-    thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
-    print_responsabilidade_thread(_args);
 
+    create_threads(_args, NUM_THREADS, arq_origem, &args_main, &control_process);
+    thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
+    create_threads_mmory_set(&my_set_memory, N);
+    //print_responsabilidade_thread(my_set_memory._my_set);
+    print_responsabilidade_thread(_args);
 
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
 
     tempo = clock();
     printf("\nEm execucao ...\n");
 
-    malloc_memory_dataset(N);
+    calloc_memory_dataset(N);
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
 
-    if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
-    else exit(0xF);
+    //if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
+    //else exit(0xF);
 
     /*Repassa função de trabalho*/
 	for(i = 0; i < NUM_THREADS; i++) {
@@ -252,13 +338,13 @@ int main ()
 		pthread_join(_args[i].thread, NULL);
 	}
 	pthread_join(thread_1, NULL);
-	pthread_join(args_main.thread, NULL);
+	//pthread_join(args_main.thread, NULL);
+	printf("cheguei aqui\n");
 
 	for (i = 0; i < NUM_THREADS; i++) {
         if (status_create( status = pthread_create((&_args[i].thread), NULL, solicitacao_arquivo_job, (void *)&_args[i])));
         else exit(0xF);
 	}
-
     /*Thread principal aguarda todas as thredes de trabalhos finalizarem*/
 	for(i = 0; i < NUM_THREADS; i++) {
 		pthread_join(_args[i].thread, NULL);
