@@ -63,10 +63,10 @@
 	"lista_th.h"
 	"../lib_lista_int/lista.h"
 
-1620015290 source:c:\github\paralela-matriz-normalizacao\src\main.c
+1620017552 source:c:\github\paralela-matriz-normalizacao\src\main.c
 	"main.h"
 
-1619988793 c:\github\paralela-matriz-normalizacao\src\main.h
+1620016459 c:\github\paralela-matriz-normalizacao\src\main.h
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
