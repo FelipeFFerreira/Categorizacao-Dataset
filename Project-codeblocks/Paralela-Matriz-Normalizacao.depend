@@ -77,3 +77,47 @@
 	"libs/lib_thread/threads.h"
 	<omp.h>
 
+1620018603 source:d:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.c
+	"lista.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1620018603 d:\github\paralela-matriz-normalizacao\src\libs\lib_lista_int\lista.h
+	<stdbool.h>
+
+1620018603 source:d:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.c
+	"lista_th.h"
+
+1620018603 d:\github\paralela-matriz-normalizacao\src\libs\lib_thread\lista_th.h
+	<stdbool.h>
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1620274096 source:d:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.c
+	<stdlib.h>
+	"threads.h"
+
+1620018603 d:\github\paralela-matriz-normalizacao\src\libs\lib_thread\threads.h
+	<stdbool.h>
+	<stdio.h>
+	<pthread.h>
+	<semaphore.h>
+	"lista_th.h"
+	"../lib_lista_int/lista.h"
+
+1620281653 source:d:\github\paralela-matriz-normalizacao\src\main.c
+	"main.h"
+
+1620281653 d:\github\paralela-matriz-normalizacao\src\main.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+	<time.h>
+	"libs/lib_lista_int/lista.h"
+	"libs/lib_thread/lista_th.h"
+	"libs/lib_thread/threads.h"
+	<omp.h>
+
