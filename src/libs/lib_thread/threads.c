@@ -31,11 +31,14 @@ bool status_create(int status)
 void create_threads_mmory_set(args_memory * _m, unsigned int n)
 {
     unsigned int i;
+    //#pragma omp parallel for
 	for(i = 0; i < NUM_THREADS; i++) {
         lst_init(&_m->_my_set[i].lista);
 	}
 
+	//#pragma omp parallel for
 	for (i = 0; i < n; i++) {
+		//printf("i:%d\n", i);
         lst_ins(&_m->_my_set[i % NUM_THREADS].lista, i);
 	}
 }

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <omp.h>
 
 #define NOT_EXIST -1
 

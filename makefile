@@ -7,5 +7,5 @@ main.o: main.c threads.c lista.h
 lista.o: lista.c lista.h
 	gcc -c lista.c	
 
-threads.o: threads.c threads.h lista.h -lpthread
-	gcc -c threads.c
+threads.o: threads.c threads.h lista.h -lpthread -fopenmp
+	gcc -c threads.c -fopenmp

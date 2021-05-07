@@ -14,34 +14,57 @@ static controles control_process;
 static char*** dataset_data;
 static char*** dataset_normalizado;
 static path_arq path_arq_t[1];
-args_memory my_set_memory;
 
 
 
 static void calloc_memory_dataset(unsigned int n)
 {
-    dataset_data =  (char ***) calloc(n, sizeof(char **));
-    dataset_normalizado = calloc(n, sizeof(char **));
+    if ((dataset_data =  (char ***) calloc(n, sizeof(char **))) == NULL) {
+        fprintf(stderr, "Erro de alocacao de memoria!\n");
+        exit(1);
+    }
+
+    if ((dataset_normalizado = calloc(n, sizeof(char **))) == NULL) {
+        fprintf(stderr, "Erro de alocacao de memoria!\n");
+        exit(1);
+    }
+
     unsigned int i;
 
     #ifdef INSTALL_OMP
         #pragma omp parallel for
-    #endif // INSTALL_OMP
     for (i = 0; i < n; i++) {
-        dataset_data[i] = (char**) calloc(QTD_COLLUN, sizeof(char *));
-        dataset_normalizado[i] = (char**) calloc(QTD_COLLUN, sizeof(char *));
+        
+        if ((dataset_data[i] = (char**) calloc(QTD_COLLUN, sizeof(char *))) == NULL) {
+            fprintf(stderr, "Erro de alocacao de memoria!\n");
+            exit(1);
+        }
+
+        if ((dataset_normalizado[i] = (char**) calloc(QTD_COLLUN, sizeof(char *))) == NULL) {
+            fprintf(stderr, "Erro de alocacao de memoria!\n");
+            exit(1);
+        }
     }
+    #endif // INSTALL_OMP
+
     #ifdef INSTALL_OMP
         #pragma omp parallel for
-    #endif // INSTALL_OMP
     for (i = 0; i < n; i++) {
         for (unsigned int j = 0; j < QTD_COLLUN; j++) {
-            dataset_data[i][j] =  (char*) calloc(QTD_WORD, sizeof(char));
+            if ((dataset_data[i][j] =  (char*) calloc(QTD_WORD, sizeof(char))) == NULL) {
+                fprintf(stderr, "Erro de alocacao de memoria!\n");
+                exit(1);
+            }
             dataset_data[i][j][0] = 0;
-            dataset_normalizado[i][j] =  (char*) calloc(QTD_WORD, sizeof(char));
+            if ((dataset_normalizado[i][j] =  (char*) calloc(QTD_WORD, sizeof(char))) == NULL) {
+                fprintf(stderr, "Erro de alocacao de memoria!\n");
+                exit(1);
+            }
             dataset_normalizado[i][j][0] = 0;
         }
     }
+    #endif // INSTALL_OMP
+
 }
 
 static void clear_memory_dataset(void * _args)
@@ -55,20 +78,6 @@ static void clear_memory_dataset(void * _args)
                 strcpy(dataset_data[i][j], "");
             }
         }
-    #endif // INSTALL_OMP
-    #ifdef INSTALL_OMP
-    args * _m = (args *) _args;
-    lst_ptr l = _m->lista;
-    while (l != NULL) {
-        for (unsigned int j = 0; j < QTD_COLLUN; j++) {
-            int debug = l->dado;
-            strcpy(dataset_data[l->dado][j], "");
-            strcpy(dataset_normalizado[l->dado][j], "");
-            //lst_print(l);
-            //printf("\n");
-        }
-        l = l->prox;
-    }
     #endif // INSTALL_OMP
 }
 
@@ -153,7 +162,7 @@ static void * normaliza_colun_date(void * _args)
         #ifdef INSTALL_OMP
             #pragma omp parallel for
         #endif // INSTALL_OMP
-            for (i = 0; i < N;) {
+            for (i = 0; i < N; i++) {
                 switch (normalize_info_date(*args_t, dataset_data[i][l->dado - 1], l->dado, &id_word)) {
                     case HOLD :
                     break;
@@ -228,17 +237,43 @@ static void desbloqueio_threads()
 
 static void clear_memory()
 {
-    #ifdef INSTALL_OMP
+    #ifndef INSTALL_OMP
     int status;
-    for (unsigned int i = 0; i < NUM_THREADS; i++) {
-        if (status_create( status = pthread_create((&my_set_memory._my_set[i].thread), NULL, clear_memory_dataset, (void *)&my_set_memory._my_set[i])));
-        else exit(0xF);
+    //for (unsigned int i = 0; i < NUM_THREADS; i++) {
+        //if (status_create( status = pthread_create((&my_set_memory._my_set[i].thread), NULL, clear_memory_dataset, (void *)&my_set_memory._my_set[i])));
+        //else 
+            exit(0xF);
 	}
     #endif // INSTALL_OMP
+
     #ifndef INSTALL_OMP
      clear_memory_dataset(NULL);
     #endif // INSTALL_OMP
 
+}
+
+static void * processar_matriz_entrada(void * _args)
+{
+    args * args_t = (args*) _args;
+    tipoDado i, j, count = 0;
+
+    //sem_wait(&control_process.mutexs_threads[NUM_THREADS]);
+    //sem_wait(&control_process.mutexs_process[NUM_THREADS]);
+    //#pragma omp parallel for
+    lst_ptr p = args_t->lista;
+    while (p != NULL) {
+        for (j = 0; j < QTD_COLLUN;) {
+            if (strcmp(dataset_data[p->dado][j], "") != 0) {
+                add_lst_info_distinct(&colun_date[j], dataset_data[p->dado][j]);
+                j++;
+            }
+        }
+        p = p->prox;
+        //printf("i:%d\n", i );
+    }
+    //count += i;
+    //sem_post(&control_process.mutexs_process[NUM_THREADS]);
+return 0;
 }
 
 static void * ler_matriz_entrada(void * args)
@@ -257,7 +292,9 @@ static void * ler_matriz_entrada(void * args)
             //printf("Aguardando Todos\n");
             //aguarda_processos_threads();
             //printf("Liberando Todos\n");
-            //clear_memory();
+            printf("Liberando espaço da matriz\n");
+            clear_memory();
+            printf("Retornando\n");
             //liberar_processos_threads();
             //desbloqueio_threads();
         }
@@ -265,14 +302,14 @@ static void * ler_matriz_entrada(void * args)
             token = strtok(str, ",");
             for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
                 strcpy(dataset_data[i][j], token);
-                add_lst_info_distinct(&colun_date[j], token);
+                //add_lst_info_distinct(&colun_date[j], token);
                 token = strtok(NULL, ",");
             }
-            float temp = (float) (clock() - tempo)  / CLOCKS_PER_SEC;
-            if (temp > 10) {
-                printf("\n[Feedback: %fs][%d]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC, i);
-                tempo = clock();
-            }
+            //float temp = (float) (clock() - tempo)  / CLOCKS_PER_SEC;
+            //if (temp > 10) {
+                //printf("\n[Feedback: %fs][%d]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC, i);
+                //tempo = clock();
+            //}
         }
 
         count += i;
@@ -284,31 +321,45 @@ static void * ler_matriz_entrada(void * args)
 
 int main ()
 {
-	int i, status;
-	clock_t tempo;
-	args _args[NUM_THREADS]; //numero de args por threads de CPU
-	struct args_arq args_main;
-	pthread_t thread_1; //thread responsavel pelo arquivo de entrada
-
-    create_threads(_args, NUM_THREADS, arq_origem, &args_main, &control_process);
-    thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
-    //create_threads_mmory_set(&my_set_memory, N);
-    //print_responsabilidade_thread(my_set_memory._my_set);
-    print_responsabilidade_thread(_args);
-
-    path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
-
-    printf("\nAlocando...");
-    calloc_memory_dataset(N);
+    clock_t tempo;
 
     tempo = clock();
+	int i, status;
+	args _args[NUM_THREADS]; //numero de args por threads de CPU
+	struct args_arq args_main;
+    args_memory mm_set;
+    pthread_t thread_1; //thread responsavel pelo arquivo de entrada
+    pthread_t thread_2; //thread responsavel pelo arquivo de entrada
+    
+    create_threads(_args, NUM_THREADS, arq_origem, &args_main, &control_process);
+    thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
+    create_threads_mmory_set(&mm_set, N);
+    print_responsabilidade_thread(_args);
+   //print_responsabilidade_thread(mm_set._my_set);
+    path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
+
+    printf("\nAlocando Matriz de tamanho: %d\n...", N);
+    calloc_memory_dataset(N);
+    
     printf("\nEm execucao ...\n");
+
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
-    pthread_join(thread_1, NULL);
-	printf("\n\n[Tempo Total Do Processo: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
-    exit(1);
 
+    pthread_join(thread_1, NULL);
+    printf("\n\n[Tempo Total de Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
+
+    for (i = 0; i < NUM_THREADS; i++) {
+        if (status_create( status = pthread_create((&mm_set._my_set[i].thread), NULL, processar_matriz_entrada, (void *)&mm_set._my_set[i])));
+        else exit(0xF);
+    }
+
+    pthread_join(thread_2, NULL);
+    printf("\n\n[Tempo Total de Processamento: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
+    exit(10);
+
+
+    printf("Iniciando funções de trabalhos\n");
     /*Repassa função de trabalho*/
 	for(i = 0; i < NUM_THREADS; i++) {
 		if (status_create(status = pthread_create((&_args[i].thread), NULL, normaliza_colun_date, (void *)&_args[i])));
@@ -319,13 +370,13 @@ int main ()
 		pthread_join(_args[i].thread, NULL);
 	}
 
-
+    printf("Iniciando Escrita arquivo Principal\n\n");
 	if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
     else exit(0xF);
     pthread_join(args_main.thread, NULL);
-	printf("cheguei aqui\n");
 	//system("pause");
 
+    printf("Iniciando Escrita nos subs-arquivos\n\n");
 	for (i = 0; i < NUM_THREADS; i++) {
         if (status_create( status = pthread_create((&_args[i].thread), NULL, solicitacao_arquivo_job, (void *)&_args[i])));
         else exit(0xF);

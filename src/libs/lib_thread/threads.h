@@ -14,6 +14,7 @@
 #include <semaphore.h>
 #include "lista_th.h"
 #include "../lib_lista_int/lista.h"
+#include <omp.h>
 
 #define NUM_THREADS 6 //Defina a quantidade de threads a serem utilizadas.
 #define N 1000
