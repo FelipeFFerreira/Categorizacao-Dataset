@@ -6,7 +6,8 @@
 #include "lista_th.h"
 
 
-void lst_init_th(lst_ptr_th * l) {
+void lst_init_th(lst_ptr_th * l)
+{
     *l = NULL;
 }
 
@@ -17,21 +18,19 @@ void lst_ins_th(lst_ptr_th * l, lst_info_th val) {
         fprintf(stderr, "Erro de alocacao de memoria!\n");
         exit(1);
     }
+
     n->dado = val;
+
     if (*l == NULL) {
-        n->prox = *l;
         *l = n;
+        (*l)->prox = *l;
         return;
     }
-    else {
-        lst_ptr_th p = *l;
-         while (p->prox != NULL) {
-            p = p->prox;
-         }
-         n->prox = p->prox;
-         p->prox = n;
-         return;
-    }
+
+    n->prox = (*l)->prox;
+    (*l)->prox = n;
+    *l = n;
+    return;
 }
 
 void lst_print_th(lst_ptr_th l) {
@@ -46,13 +45,16 @@ void lst_print_th(lst_ptr_th l) {
 bool lst_existing_th(lst_ptr_th l, lst_info_th x, int * id)
 {
     int count = -1;
-    while (l != NULL) {
-        if (!strcmp(l->dado.word, x.word)) {
-            l->dado.count++;
-            return true;
-        }
-        l = l->prox;
-        count += 1;
+    if (l != NULL) {
+        lst_ptr_th p = l;
+        do {
+            if (!strcmp(p->dado.word, x.word)) {
+                p->dado.count++;
+                return true;
+            }
+            p = p->prox;
+            count += 1;
+        } while (p != l);
     }
     *id = count + 1;
     

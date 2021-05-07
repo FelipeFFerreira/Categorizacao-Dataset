@@ -259,23 +259,17 @@ static void * processar_matriz_entrada(void * _args)
     args * args_t = (args*) _args;
     tipoDado i, j, count = 0;
 
-    do {
-        //#pragma omp parallel for
-        sem_wait(&control_process.mutexs_threads[args_t->id - 1]); //se threads liberadas
-        sem_wait(&control_process.mutexs_process[args_t->id - 1]);
-        lst_ptr p = args_t->lista;
-        while (p != NULL) {
-            for (j = 0; j < QTD_COLLUN;) {
-                if (strcmp(dataset_data[p->dado][j], "") != 0) {
-                    add_lst_info_distinct(&colun_date[j], dataset_data[p->dado][j]);
-                    j++;
-                }
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < QTD_COLLUN;) {
+            if (strcmp(dataset_data[i][j], "") != 0) {
+                add_lst_info_distinct(&colun_date[j], dataset_data[i][j]);
+                j++;
             }
-            p = p->prox;
         }
-        sem_post(&control_process.mutexs_process[args_t->id - 1]);
+    }
+        //sem_post(&control_process.mutexs_process[args_t->id - 1]);
         //count += i;
-    } while (count < N_TOTAL - 1);
+    //} while (count < N_TOTAL);
     
 return 0;
 }
@@ -293,6 +287,7 @@ static void * ler_matriz_entrada(void * args)
         lst_init_th(&colun_date[i]);
     do {
         if (count != 0 ) {
+            printf("B\n");
             printf("Aguardando Todos\n");
             aguarda_processos_threads();
             //printf("Liberando Todos\n");
@@ -302,6 +297,7 @@ static void * ler_matriz_entrada(void * args)
             liberar_processos_threads();
             desbloqueio_threads();
         }
+        printf("A\n");
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
             for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
@@ -314,10 +310,11 @@ static void * ler_matriz_entrada(void * args)
                 //printf("\n[Feedback: %fs][%d]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC, i);
                 //tempo = clock();
             //}
+            //printf("%d\n", i);
         }
 
         count += i;
-    } while (count < N_TOTAL - 1);
+    } while (count < N_TOTAL);
 
 	return;
 }
@@ -337,7 +334,7 @@ int main ()
     
     create_threads(_args, NUM_THREADS, arq_origem, &args_main, &control_process);
     thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
-    create_threads_mmory_set(&mm_set, N);
+    //create_threads_mmory_set(&mm_set, N);
     print_responsabilidade_thread(_args);
    //print_responsabilidade_thread(mm_set._my_set);
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
@@ -350,15 +347,21 @@ int main ()
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
 
-    pthread_join(thread_1, NULL);
+    pthread_join(thread_1, NULL);  
+    pthread_kill(thread_1);
     printf("\n\n[Tempo Total de Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 
-    for (i = 0; i < NUM_THREADS; i++) {
-        if (status_create( status = pthread_create((&mm_set._my_set[i].thread), NULL, processar_matriz_entrada, (void *)&mm_set._my_set[i])));
+    //for (i = 0; i < NUM_THREADS; i++) {
+        if (status_create( status = pthread_create((&mm_set._my_set[0].thread), NULL, processar_matriz_entrada, (void *)&mm_set._my_set[0])));
         else exit(0xF);
-    }
+    //}
 
-    pthread_join(thread_2, NULL);
+    /*Thread principal aguarda todas as thredes de trabalhos finalizarem*/
+    printf("Aguardando finalizarem\n");
+    //for(i = 0; i < NUM_THREADS; i++) {
+        pthread_join(mm_set._my_set[0].thread, NULL);
+    //}  
+    
     printf("\n\n[Tempo Total de Processamento: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
     exit(10);
 
