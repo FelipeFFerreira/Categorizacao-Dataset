@@ -6,7 +6,7 @@ typedef struct {
 
  ///* Regiao de Variaves Globais no Escopo main.c *
 static lst_ptr_th colun_date[QTD_COLLUN];
-static char arq_origem[] = "D:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000_1.csv";
+static char arq_origem[] = "/media/felipe/Novo volume/GitHub/Paralela-Matriz-Normalizacao/arq_csvs/dataset_00_1000_1.csv";
 //static pthread_mutex_t mutex;
 
 static controles control_process;
@@ -306,6 +306,8 @@ int main ()
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
     pthread_join(thread_1, NULL);
+	printf("\n\n[Tempo Total Do Processo: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
+    exit(1);
 
     /*Repassa função de trabalho*/
 	for(i = 0; i < NUM_THREADS; i++) {

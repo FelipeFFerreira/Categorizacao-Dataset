@@ -67,7 +67,7 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
         for (j = 0; j < 4; j++) {
             qtd_colun += 1;
             lst_ins(&_args[n_thread].lista, qtd_colun);
-            sprintf(str_path, "D:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\colun-%d.csv", qtd_colun);
+            sprintf(str_path, "/media/felipe/Novo volume/GitHub/Paralela-Matriz-Normalizacao/arq_csvs/colun-%d.csv", qtd_colun);
             _args[n_thread].fptr_destinos[j] = open_arquivo(str_path, "w");
         }
         n_thread += 1;
@@ -76,7 +76,7 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
         for (j = 0; j < NUM_THREADS; j++) {
             _args_main->thread_buffer[i][j].state = TO_DO;
         }
-	_args_main->arq_main = open_arquivo("D:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\principal-normalizado.csv", "w");
+	_args_main->arq_main = open_arquivo("/media/felipe/Novo volume/GitHub/Paralela-Matriz-Normalizacao/arq_csvs/principal-normalizado.csv", "w");
 }
 
 FILE *open_arquivo(char * str, char * modo) {
