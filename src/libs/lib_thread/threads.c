@@ -34,6 +34,7 @@ void create_threads_mmory_set(args_memory * _m, unsigned int n)
     //#pragma omp parallel for
 	for(i = 0; i < NUM_THREADS; i++) {
         lst_init(&_m->_my_set[i].lista);
+        _m->_my_set[i].id = i + 1;
 	}
 
 	//#pragma omp parallel for

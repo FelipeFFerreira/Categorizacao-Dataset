@@ -15,6 +15,8 @@ static char*** dataset_data;
 static char*** dataset_normalizado;
 static path_arq path_arq_t[1];
 
+tipoDado count = 0;
+
 
 
 static void calloc_memory_dataset(unsigned int n)
@@ -257,22 +259,24 @@ static void * processar_matriz_entrada(void * _args)
     args * args_t = (args*) _args;
     tipoDado i, j, count = 0;
 
-    //sem_wait(&control_process.mutexs_threads[NUM_THREADS]);
-    //sem_wait(&control_process.mutexs_process[NUM_THREADS]);
-    //#pragma omp parallel for
-    lst_ptr p = args_t->lista;
-    while (p != NULL) {
-        for (j = 0; j < QTD_COLLUN;) {
-            if (strcmp(dataset_data[p->dado][j], "") != 0) {
-                add_lst_info_distinct(&colun_date[j], dataset_data[p->dado][j]);
-                j++;
+    do {
+        //#pragma omp parallel for
+        sem_wait(&control_process.mutexs_threads[args_t->id - 1]); //se threads liberadas
+        sem_wait(&control_process.mutexs_process[args_t->id - 1]);
+        lst_ptr p = args_t->lista;
+        while (p != NULL) {
+            for (j = 0; j < QTD_COLLUN;) {
+                if (strcmp(dataset_data[p->dado][j], "") != 0) {
+                    add_lst_info_distinct(&colun_date[j], dataset_data[p->dado][j]);
+                    j++;
+                }
             }
+            p = p->prox;
         }
-        p = p->prox;
-        //printf("i:%d\n", i );
-    }
-    //count += i;
-    //sem_post(&control_process.mutexs_process[NUM_THREADS]);
+        sem_post(&control_process.mutexs_process[args_t->id - 1]);
+        //count += i;
+    } while (count < N_TOTAL - 1);
+    
 return 0;
 }
 
@@ -281,7 +285,7 @@ static void * ler_matriz_entrada(void * args)
 	path_arq * _path_arq_t = (path_arq*) args;
 	char str[1001], *token;
 	unsigned int i;
-	tipoDado count = 0;
+	tipoDado;
 	clock_t tempo;
 	tempo = clock();
 
@@ -289,14 +293,14 @@ static void * ler_matriz_entrada(void * args)
         lst_init_th(&colun_date[i]);
     do {
         if (count != 0 ) {
-            //printf("Aguardando Todos\n");
-            //aguarda_processos_threads();
+            printf("Aguardando Todos\n");
+            aguarda_processos_threads();
             //printf("Liberando Todos\n");
             printf("Liberando espaço da matriz\n");
             clear_memory();
             printf("Retornando\n");
-            //liberar_processos_threads();
-            //desbloqueio_threads();
+            liberar_processos_threads();
+            desbloqueio_threads();
         }
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
