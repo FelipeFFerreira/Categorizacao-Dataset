@@ -51,11 +51,11 @@ void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_m
 	for(i = 0; i < n; i++) {
 		lst_init(&_args[i].lista);
 		_args[i].id = i + 1;
-		sem_init(&_control_process->mutexs_threads[i], 0, 1);
-		sem_init(&_control_process->mutexs_process[i], 0, 1);
+		//sem_init(&_control_process->mutexs_threads[i], 0, 1);
+		//sem_init(&_control_process->mutexs_process[i], 0, 1);
 	}
-	sem_init(&_control_process->mutexs_threads[i], 0, 1);
-    sem_init(&_control_process->mutexs_process[i], 0, 1);
+	//sem_init(&_control_process->mutexs_threads[i], 0, 1);
+    //sem_init(&_control_process->mutexs_process[i], 0, 1);
 	_args_main->id = i;
 }
 

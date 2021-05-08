@@ -21,8 +21,8 @@
 #define PROCEED 1
 #define NEXT 2
 
-#define N 100000
-#define N_TOTAL 100000
+#define N 100010
+#define N_TOTAL 100010
 #define QTD_WORD 1000
 
 

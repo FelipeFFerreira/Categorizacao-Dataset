@@ -15,9 +15,6 @@ static char*** dataset_data;
 static char*** dataset_normalizado;
 static path_arq path_arq_t[1];
 
-tipoDado count = 0;
-
-
 
 static void calloc_memory_dataset(unsigned int n)
 {
@@ -88,16 +85,19 @@ static void * solicitacao_arquivo_job(void * _args)
     args * _args_t = (args*) _args;
 
     lst_ptr l = _args_t->lista;
-
-    while (l != NULL) {
-        lst_ptr_th p = colun_date[l->dado - 1];
-        while (p != NULL) {
-            if (p->dado.id == 0)
-                fprintf(_args_t->fptr_destinos[(l->dado - 1) % QTD_COLLUN_THREAD], "%s,,\n", p->dado.word);
-            fprintf(_args_t->fptr_destinos[(l->dado - 1) % QTD_COLLUN_THREAD], "%d,%s,%d\n", p->dado.id, p->dado.word, p->dado.count);
-            p = p->prox;
-        }
-        l = l->prox;
+    if (l != NULL) {
+        do {
+            lst_ptr_th p = colun_date[l->dado - 1];
+            if (p != NULL) {
+                do {
+                    if (p->dado.id == 0)
+                        fprintf(_args_t->fptr_destinos[(l->dado - 1) % QTD_COLLUN_THREAD], "%s,,\n", p->dado.word);
+                    fprintf(_args_t->fptr_destinos[(l->dado - 1) % QTD_COLLUN_THREAD], "%d,%s,%d\n", p->dado.id, p->dado.word, p->dado.count);
+                    p = p->prox;
+                } while(p != colun_date[l->dado - 1]);
+            }
+            l = l->prox;
+        } while(l != _args_t->lista);
     }
     return 0;
 }
@@ -119,10 +119,13 @@ static void add_lst_info_distinct(lst_ptr_th * l, char * str)
 /// *Verifica se info da coluna é um job a processar*
 static bool is_my_job(lst_ptr l, int colun)
 {
-    while (l != NULL) {
-        if (l->dado == colun)
-            return true;
-        l = l->prox;
+    if (l != NULL) {
+        lst_ptr p = l;
+        do {
+            if (p->dado == colun)
+                return true;
+            p = p->prox;
+        } while (p != l);
     }
     return false;
 }
@@ -157,34 +160,35 @@ static void * normaliza_colun_date(void * _args)
 	tipoDado i, id_word, count = 0;
 
     do {
-        lst_ptr l = args_t->lista;
         //sem_wait(&control_process.mutexs_threads[args_t->id - 1]);
         //sem_wait(&control_process.mutexs_process[args_t->id - 1]);
-        while (l != NULL) {
-        #ifdef INSTALL_OMP
-            #pragma omp parallel for
-        #endif // INSTALL_OMP
-            for (i = 0; i < N; i++) {
-                switch (normalize_info_date(*args_t, dataset_data[i][l->dado - 1], l->dado, &id_word)) {
-                    case HOLD :
-                    break;
-                    case PROCEED :
-                        if (id_word == 0) {
-                            sprintf(word, "%s,", dataset_data[i][l->dado - 1]);
-                            strcpy(dataset_normalizado[i][l->dado - 1], word);
-                        }
-                        else {
-                            sprintf(word, "%d,", id_word);
-                            strcpy(dataset_normalizado[i][l->dado - 1], word);
-                        }
-                        i += 1;
-                    break;
-                    case NEXT :
-                        i += 1;
-                    break;
-                 }
-            }
-            l = l->prox;
+        if (args_t->lista != NULL) {
+            lst_ptr p = args_t->lista;
+            do {
+            #ifdef INSTALL_OMP
+                //#pragma omp parallel for
+            #endif // INSTALL_OMP
+                for (i = 0; i < N; i++) {
+                    switch (normalize_info_date(*args_t, dataset_data[i][p->dado - 1], p->dado, &id_word)) {
+                        case HOLD :
+                        break;
+                        case PROCEED :
+                            if (id_word == 0) {
+                                sprintf(word, "%s,", dataset_data[i][p->dado - 1]);
+                                strcpy(dataset_normalizado[i][p->dado - 1], word);
+                            }
+                            else {
+                                sprintf(word, "%d,", id_word);
+                                strcpy(dataset_normalizado[i][p->dado - 1], word);
+                            }
+                        break;
+                        case NEXT :
+                        break;
+                     }
+                     //printf("th:%d -- [%d][%d]\n", args_t->id, i, p->dado - 1);
+                }
+                p = p->prox;
+            } while(p != args_t->lista);
         }
         count += i;
         //sem_post(&control_process.mutexs_process[args_t->id - 1]);
@@ -259,18 +263,21 @@ static void * processar_matriz_entrada(void * _args)
     args * args_t = (args*) _args;
     tipoDado i, j, count = 0;
 
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < QTD_COLLUN;) {
-            if (strcmp(dataset_data[i][j], "") != 0) {
-                add_lst_info_distinct(&colun_date[j], dataset_data[i][j]);
-                j++;
+    if (args_t->lista != NULL) {
+        lst_ptr p = args_t->lista;
+        do {
+            for (i = 0; i < N; i++) {
+                //printf("[%d][%d]\n", i, p->dado - 1);
+                if (strcmp(dataset_data[i][p->dado - 1], "") != 0) {
+                    add_lst_info_distinct(&colun_date[p->dado - 1], dataset_data[i][p->dado - 1]);     
+                }
             }
-        }
+            p = p->prox;
+        } while(p != args_t->lista);
     }
         //sem_post(&control_process.mutexs_process[args_t->id - 1]);
         //count += i;
     //} while (count < N_TOTAL);
-    
 return 0;
 }
 
@@ -279,7 +286,7 @@ static void * ler_matriz_entrada(void * args)
 	path_arq * _path_arq_t = (path_arq*) args;
 	char str[1001], *token;
 	unsigned int i;
-	tipoDado;
+	tipoDado count = 0;
 	clock_t tempo;
 	tempo = clock();
 
@@ -297,7 +304,7 @@ static void * ler_matriz_entrada(void * args)
             liberar_processos_threads();
             desbloqueio_threads();
         }
-        printf("A\n");
+
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
             for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
@@ -349,22 +356,19 @@ int main ()
 
     pthread_join(thread_1, NULL);  
     pthread_kill(thread_1);
-    printf("\n\n[Tempo Total de Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
+    printf("\n1-[Tempo Total de Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 
-    //for (i = 0; i < NUM_THREADS; i++) {
-        if (status_create( status = pthread_create((&mm_set._my_set[0].thread), NULL, processar_matriz_entrada, (void *)&mm_set._my_set[0])));
-        else exit(0xF);
-    //}
-
-    /*Thread principal aguarda todas as thredes de trabalhos finalizarem*/
-    printf("Aguardando finalizarem\n");
-    //for(i = 0; i < NUM_THREADS; i++) {
-        pthread_join(mm_set._my_set[0].thread, NULL);
-    //}  
-    
-    printf("\n\n[Tempo Total de Processamento: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
-    exit(10);
-
+    printf("\n[Iniciando funções de categorização\n");
+    /*Repassa função de trabalho*/
+    for(i = 0; i < NUM_THREADS; i++) {
+        if (status_create(status = pthread_create((&_args[i].thread), NULL, processar_matriz_entrada, (void *)&_args[i])));
+        else exit(0xFF);
+    }
+    for(i = 0; i < NUM_THREADS; i++) {
+        pthread_join(_args[i].thread, NULL);
+    } 
+    printf("\n2-[Tempo Total de Processamento De Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
+    exit(1);
 
     printf("Iniciando funções de trabalhos\n");
     /*Repassa função de trabalho*/
@@ -376,11 +380,13 @@ int main ()
 	for(i = 0; i < NUM_THREADS; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
+    printf("\n[Tempo Total de normaliza_colun_date: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 
-    printf("Iniciando Escrita arquivo Principal\n\n");
+    printf("\nIniciando Escrita arquivo Principal\n\n");
 	if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
     else exit(0xF);
     pthread_join(args_main.thread, NULL);
+    printf("\n[Tempo Total de escrita principal: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 	//system("pause");
 
     printf("Iniciando Escrita nos subs-arquivos\n\n");
@@ -393,7 +399,7 @@ int main ()
 		pthread_join(_args[i].thread, NULL);
 	}
 
-    printf("\nTerminando processo ...\n");
+    printf("\nTerminando todo o processo ...\n");
 	printf("\n\n[Tempo Total Do Processo: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 	return 0;
 }

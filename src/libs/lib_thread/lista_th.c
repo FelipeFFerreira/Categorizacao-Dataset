@@ -63,10 +63,13 @@ bool lst_existing_th(lst_ptr_th l, lst_info_th x, int * id)
 
 unsigned int lst_info_id_th(lst_ptr_th l, lst_info_th x)
 {
-    while (l != NULL) {
-        if (!strcmp(l->dado.word, x.word))
-            return l->dado.id;
-        l = l->prox;
+    if (l != NULL) {
+        lst_ptr_th p = l;
+        do {
+            if (!strcmp(p->dado.word, x.word))
+                return p->dado.id;
+            p = p->prox;
+        } while (p != l);
     }
     return NOT_EXIST;
 }
