@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include "libs/lib_thread/avl.h"
 #include "libs/lib_lista_int/lista.h"
 #include "libs/lib_thread/lista_th.h"
 #include "libs/lib_thread/threads.h"

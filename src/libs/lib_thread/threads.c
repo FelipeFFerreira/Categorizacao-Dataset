@@ -16,6 +16,7 @@ void print_responsabilidade_thread(args * _args)
 		printf("As colunas que fiquei responsavel foram :)\n");
 		lst_print(_args[i].lista);
 	}
+	printf("____________________________________________________\n");
 }
 
 bool status_create(int status)
@@ -59,6 +60,13 @@ void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_m
 	_args_main->id = i;
 }
 
+void thread_jobs_ss(args * args_t)
+{
+	for (unsigned int i = 0; i < QTD_COLLUN; i++) {
+		lst_ins(&args_t[i % NUM_THREADS].lista, i + 1);
+	}
+}
+
 void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
 {
     int i, j, qtd_colun = 0, n_thread = 0;
@@ -71,7 +79,7 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
         for (j = 0; j < 4; j++) {
             qtd_colun += 1;
             lst_ins(&_args[n_thread].lista, qtd_colun);
-            sprintf(str_path, "/media/felipe/Novo volume/GitHub/Paralela-Matriz-Normalizacao/arq_csvs/colun-%d.csv", qtd_colun);
+            sprintf(str_path, "/mnt/sda2/arq_csvs/colun-%d.csv", qtd_colun);
             _args[n_thread].fptr_destinos[j] = open_arquivo(str_path, "w");
         }
         n_thread += 1;
@@ -80,7 +88,7 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
         for (j = 0; j < NUM_THREADS; j++) {
             _args_main->thread_buffer[i][j].state = TO_DO;
         }
-	_args_main->arq_main = open_arquivo("/media/felipe/Novo volume/GitHub/Paralela-Matriz-Normalizacao/arq_csvs/principal-normalizado.csv", "w");
+	_args_main->arq_main = open_arquivo("/mnt/sda2/arq_csvs/principal-normalizado.csv", "w");
 }
 
 FILE *open_arquivo(char * str, char * modo) {

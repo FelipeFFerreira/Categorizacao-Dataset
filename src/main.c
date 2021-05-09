@@ -5,9 +5,10 @@ typedef struct {
 }path_arq; //struct para captura da matriz de entrada
 
  ///* Regiao de Variaves Globais no Escopo main.c *
-static lst_ptr_th colun_date[QTD_COLLUN];
-static char arq_origem[] = "/media/felipe/Novo volume/GitHub/Paralela-Matriz-Normalizacao/arq_csvs/dataset_00_1000_1.csv";
-//static pthread_mutex_t mutex;
+static avl_tree colun_date[QTD_COLLUN];
+int id_tree_colun_date[QTD_COLLUN];
+static char arq_origem[] = "/mnt/sda2/arq_csvs/dataset_00_1000_1.csv";
+static pthread_mutex_t mutex;
 
 static controles control_process;
 
@@ -80,6 +81,7 @@ static void clear_memory_dataset(void * _args)
     #endif // INSTALL_OMP
 }
 
+/*
 static void * solicitacao_arquivo_job(void * _args)
 {
     args * _args_t = (args*) _args;
@@ -87,7 +89,7 @@ static void * solicitacao_arquivo_job(void * _args)
     lst_ptr l = _args_t->lista;
     if (l != NULL) {
         do {
-            lst_ptr_th p = colun_date[l->dado - 1];
+            avl_tree p = colun_date[l->dado - 1];
             if (p != NULL) {
                 do {
                     if (p->dado.id == 0)
@@ -101,19 +103,20 @@ static void * solicitacao_arquivo_job(void * _args)
     }
     return 0;
 }
-
-/// *Adicionar infos das colunas do arquivo de entrada*
-static void add_lst_info_distinct(lst_ptr_th * l, char * str)
+*/
+static void add_lst_info_distinct(avl_tree * l, char * str, int colunm)
 {
-    int id_t = 0;
-	lst_info_th info_t;
+	
+	avl_info info_t;
 	strcpy(info_t.word, str);
-
-	if (!lst_existing_th(*l, info_t, &id_t)) {
-		info_t.id = id_t;
-        info_t.count = 1;
-		lst_ins_th(l, info_t);
-	}
+    printf("____________________________________________________\n");
+    printf("Print arvore\n");
+    print_avl(*l);
+    printf(">HÁ PROCESSAR: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
+    if(new_distinct_info_column(l, info_t, &id_tree_colun_date[colunm - 1])) {
+    	printf(">ACCEITA: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
+    } else printf(">NEGADA: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
+    printf("____________________________________________________\n");
 }
 
 /// *Verifica se info da coluna é um job a processar*
@@ -129,16 +132,17 @@ static bool is_my_job(lst_ptr l, int colun)
     }
     return false;
 }
+ 
 
 /// *normaliza info separadamente do arquivo de entrada principal*
 static int normalize_info_date(args args_t, char * str, int colun, int * _id_word)
 {
     if (strcmp(str, "") != 0) {
-        lst_info_th info_t;
+        avl_info info_t;
         strcpy(info_t.word, str);
 
         if (is_my_job(args_t.lista, colun)) {
-            int id = lst_info_id_th(colun_date[colun - 1], info_t);
+            int id ;//= lst_info_id_th(colun_date[colun - 1], info_t);
             if (id != NOT_EXIST) {
                 *_id_word = id;
                 return PROCEED;
@@ -260,6 +264,7 @@ static void clear_memory()
 
 static void * processar_matriz_entrada(void * _args)
 {
+    //pthread_mutex_lock(&mutex);
     args * args_t = (args*) _args;
     tipoDado i, j, count = 0;
 
@@ -269,7 +274,9 @@ static void * processar_matriz_entrada(void * _args)
             for (i = 0; i < N; i++) {
                 //printf("[%d][%d]\n", i, p->dado - 1);
                 if (strcmp(dataset_data[i][p->dado - 1], "") != 0) {
-                    add_lst_info_distinct(&colun_date[p->dado - 1], dataset_data[i][p->dado - 1]);     
+                    //printf("A\n");
+                    add_lst_info_distinct(&colun_date[p->dado - 1], dataset_data[i][p->dado - 1], p->dado);
+                    //printf("B\n");
                 }
             }
             p = p->prox;
@@ -278,6 +285,7 @@ static void * processar_matriz_entrada(void * _args)
         //sem_post(&control_process.mutexs_process[args_t->id - 1]);
         //count += i;
     //} while (count < N_TOTAL);
+    //pthread_mutex_unlock(&mutex);
 return 0;
 }
 
@@ -290,8 +298,8 @@ static void * ler_matriz_entrada(void * args)
 	clock_t tempo;
 	tempo = clock();
 
-	for (i = 0; i < QTD_COLLUN; i++)
-        lst_init_th(&colun_date[i]);
+	for (i = 0; i < QTD_COLLUN; i++) colun_date[i] = NULL;
+
     do {
         if (count != 0 ) {
             printf("B\n");
@@ -339,13 +347,16 @@ int main ()
     pthread_t thread_1; //thread responsavel pelo arquivo de entrada
     pthread_t thread_2; //thread responsavel pelo arquivo de entrada
     
+    printf("\nInit criação threads\n");
     create_threads(_args, NUM_THREADS, arq_origem, &args_main, &control_process);
-    thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
+    //thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
+    printf("Init repassa trabalhos threads\n");
+    thread_jobs_ss(_args);
     //create_threads_mmory_set(&mm_set, N);
     print_responsabilidade_thread(_args);
    //print_responsabilidade_thread(mm_set._my_set);
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
-
+    
     printf("\nAlocando Matriz de tamanho: %d\n...", N);
     calloc_memory_dataset(N);
     
@@ -358,7 +369,7 @@ int main ()
     pthread_kill(thread_1);
     printf("\n1-[Tempo Total de Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 
-    printf("\n[Iniciando funções de categorização\n");
+    printf("\n[Iniciando funções de categorização]\n");
     /*Repassa função de trabalho*/
     for(i = 0; i < NUM_THREADS; i++) {
         if (status_create(status = pthread_create((&_args[i].thread), NULL, processar_matriz_entrada, (void *)&_args[i])));
@@ -391,8 +402,8 @@ int main ()
 
     printf("Iniciando Escrita nos subs-arquivos\n\n");
 	for (i = 0; i < NUM_THREADS; i++) {
-        if (status_create( status = pthread_create((&_args[i].thread), NULL, solicitacao_arquivo_job, (void *)&_args[i])));
-        else exit(0xF);
+        //if (status_create( status = pthread_create((&_args[i].thread), NULL, solicitacao_arquivo_job, (void *)&_args[i])));
+        //else exit(0xF);
 	}
     /*Thread principal aguarda todas as thredes de trabalhos finalizarem*/
 	for(i = 0; i < NUM_THREADS; i++) {
