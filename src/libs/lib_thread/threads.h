@@ -18,7 +18,7 @@
 
 #define NUM_THREADS 1 //Defina a quantidade de threads a serem utilizadas.
 #define N 1000
-#define QTD_COLLUN 5
+#define QTD_COLLUN 4
 #define QTD_COLLUN_THREAD 4
 #define PROFUNDIDADE_BF 4
 

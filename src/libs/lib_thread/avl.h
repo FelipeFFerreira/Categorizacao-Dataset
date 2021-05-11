@@ -14,7 +14,7 @@
 // Definição da estrutura de dados
 typedef struct {
     char word[300];
-	 int id;
+    unsigned int id;
 	unsigned int count;
 }avl_info;
 

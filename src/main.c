@@ -7,7 +7,7 @@ typedef struct {
  ///* Regiao de Variaves Globais no Escopo main.c *
 static avl_tree colun_date[QTD_COLLUN];
 int id_tree_colun_date[QTD_COLLUN];
-static char arq_origem[] = "/mnt/sda2/arq_csvs/dataset_00_1000_1.csv";
+static char arq_origem[] = "C:\\arq_csvs\\dataset_00_sem_virg.csv";//"/mnt/sda2/arq_csvs/dataset_00_1000_1.csv";
 static pthread_mutex_t mutex;
 
 static controles control_process;
@@ -34,7 +34,7 @@ static void calloc_memory_dataset(unsigned int n)
     #ifdef INSTALL_OMP
         #pragma omp parallel for
     for (i = 0; i < n; i++) {
-        
+
         if ((dataset_data[i] = (char**) calloc(QTD_COLLUN, sizeof(char *))) == NULL) {
             fprintf(stderr, "Erro de alocacao de memoria!\n");
             exit(1);
@@ -106,17 +106,18 @@ static void * solicitacao_arquivo_job(void * _args)
 */
 static void add_lst_info_distinct(avl_tree * l, char * str, int colunm)
 {
-	
+    static int count = 0;
+    count++;
 	avl_info info_t;
 	strcpy(info_t.word, str);
-    printf("____________________________________________________\n");
-    printf("Print arvore\n");
-    print_avl(*l);
-    printf(">HÁ PROCESSAR: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
+   if(count < 100) printf("\n____________________________________________________\n");
+    //if(count < N) printf("Print arvore\n");
+     //if(count < N) print_avl(*l);
+   if(count < 100) printf(">Ha PROCESSAR: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
     if(new_distinct_info_column(l, info_t, &id_tree_colun_date[colunm - 1])) {
-    	printf(">ACCEITA: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
-    } else printf(">NEGADA: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
-    printf("____________________________________________________\n");
+    	if(count < 100) printf(">ACCEITA: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
+    } else if(count < 100) printf(">NEGADA: id:[%d]\tword:[ %s]\n", id_tree_colun_date[colunm - 1], info_t.word, colunm - 1);
+   if(count < 100) printf("____________________________________________________\n");
 }
 
 /// *Verifica se info da coluna é um job a processar*
@@ -132,7 +133,7 @@ static bool is_my_job(lst_ptr l, int colun)
     }
     return false;
 }
- 
+
 
 /// *normaliza info separadamente do arquivo de entrada principal*
 static int normalize_info_date(args args_t, char * str, int colun, int * _id_word)
@@ -251,7 +252,7 @@ static void clear_memory()
     int status;
     //for (unsigned int i = 0; i < NUM_THREADS; i++) {
         //if (status_create( status = pthread_create((&my_set_memory._my_set[i].thread), NULL, clear_memory_dataset, (void *)&my_set_memory._my_set[i])));
-        //else 
+        //else
             exit(0xF);
 	}
     #endif // INSTALL_OMP
@@ -280,6 +281,7 @@ static void * processar_matriz_entrada(void * _args)
                 }
             }
             p = p->prox;
+            exit(10);
         } while(p != args_t->lista);
     }
         //sem_post(&control_process.mutexs_process[args_t->id - 1]);
@@ -346,7 +348,7 @@ int main ()
     args_memory mm_set;
     pthread_t thread_1; //thread responsavel pelo arquivo de entrada
     pthread_t thread_2; //thread responsavel pelo arquivo de entrada
-    
+
     printf("\nInit criação threads\n");
     create_threads(_args, NUM_THREADS, arq_origem, &args_main, &control_process);
     //thread_jobs(_args, QTD_COLLUN, NUM_THREADS, &args_main); //repassa trabalhos
@@ -356,17 +358,17 @@ int main ()
     print_responsabilidade_thread(_args);
    //print_responsabilidade_thread(mm_set._my_set);
     path_arq_t[0].fptr = open_arquivo(arq_origem, "r"); //path dataset
-    
+
     printf("\nAlocando Matriz de tamanho: %d\n...", N);
     calloc_memory_dataset(N);
-    
+
     printf("\nEm execucao ...\n");
 
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);
 
-    pthread_join(thread_1, NULL);  
-    pthread_kill(thread_1);
+    pthread_join(thread_1, NULL);
+    //pthread_kill(thread_1);
     printf("\n1-[Tempo Total de Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
 
     printf("\n[Iniciando funções de categorização]\n");
@@ -377,7 +379,7 @@ int main ()
     }
     for(i = 0; i < NUM_THREADS; i++) {
         pthread_join(_args[i].thread, NULL);
-    } 
+    }
     printf("\n2-[Tempo Total de Processamento De Leitura: %fs]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC);
     exit(1);
 
