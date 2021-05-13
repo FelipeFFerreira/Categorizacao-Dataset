@@ -35,10 +35,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/libs/lib_lista_int/lista.h" />
-		<Unit filename="../src/libs/lib_thread/avl.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../src/libs/lib_thread/avl.h" />
 		<Unit filename="../src/libs/lib_thread/lista_th.c">
 			<Option compilerVar="CC" />
 		</Unit>

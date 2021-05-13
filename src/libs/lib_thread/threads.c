@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include "threads.h"
+#include "../../main.h"
 
 
 void print_responsabilidade_thread(args * _args)
@@ -16,7 +17,6 @@ void print_responsabilidade_thread(args * _args)
 		printf("As colunas que fiquei responsavel foram :)\n");
 		lst_print(_args[i].lista);
 	}
-	printf("____________________________________________________\n");
 }
 
 bool status_create(int status)
@@ -60,17 +60,11 @@ void create_threads(args * _args, int n, char * arq_origem, ptr_args_arq _args_m
 	_args_main->id = i;
 }
 
-void thread_jobs_ss(args * args_t)
-{
-	for (unsigned int i = 0; i < QTD_COLLUN; i++) {
-		lst_ins(&args_t[i % NUM_THREADS].lista, i + 1);
-	}
-}
-
-void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
+void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main, char * _path_base)
 {
     int i, j, qtd_colun = 0, n_thread = 0;
-    char str_path[100];
+    char str_path_colun[20], str_base_aux[100];
+    strcpy(str_base_aux, _path_base);
 
     /*Repassa linha de trabalho ciclica, por thread*/
 	while (qtd_colun < QTD_COLLUN - 1) {
@@ -79,8 +73,10 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
         for (j = 0; j < 4; j++) {
             qtd_colun += 1;
             lst_ins(&_args[n_thread].lista, qtd_colun);
-            sprintf(str_path, "C:\\arq_csvs\\colun-%d.csv", qtd_colun);//"/mnt/sda2/arq_csvs/colun-%d.csv", qtd_colun);
-            _args[n_thread].fptr_destinos[j] = open_arquivo(str_path, "w");
+            sprintf(str_path_colun, "colun-%d.csv", qtd_colun);
+            strcat(str_base_aux, str_path_colun);
+            _args[n_thread].fptr_destinos[j] = open_arquivo(str_base_aux, "w");
+            strcpy(str_base_aux, _path_base);
         }
         n_thread += 1;
 	}
@@ -88,7 +84,8 @@ void thread_jobs(args * _args, int n , int n_threads, ptr_args_arq _args_main)
         for (j = 0; j < NUM_THREADS; j++) {
             _args_main->thread_buffer[i][j].state = TO_DO;
         }
-	//_args_main->arq_main = open_arquivo("/mnt/sda2/arq_csvs/principal-normalizado.csv", "w");
+    strcat(_path_base, "principal-normalizado.csv");
+	_args_main->arq_main = open_arquivo(_path_base, "w");
 }
 
 FILE *open_arquivo(char * str, char * modo) {

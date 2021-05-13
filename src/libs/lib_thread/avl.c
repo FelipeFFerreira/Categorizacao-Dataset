@@ -17,7 +17,7 @@ bool new_distinct_info_column(avl_tree * t, avl_info x, int * id) {
     //printf("foo + 2: %d\n", a);
     bool h, k = false;
 	search_new_info(t, x, &h, &k, id);
-    //printf("retornando\n");
+    printf("retornando\n");
    	return k;
 }
 
@@ -28,7 +28,7 @@ void search_new_info(avl_tree * t, avl_info x, bool * h, bool * k, int * id) {
             fprintf(stderr, "Erro de alocacao de memoria!\n");
             exit(1);
         }
-        //printf("Aloquei\n");
+        printf("Aloquei\n");
         *h = true;
 
         (*t)->dado = x;
@@ -103,7 +103,7 @@ void search_new_info(avl_tree * t, avl_info x, bool * h, bool * k, int * id) {
     else { // a chave já está na árvore
         *k = false;
         (*t)->dado.count += 1;
-        //printf("NO ja existente[word:%s, id:%d, count: %d]\n", (*t)->dado.word, (*t)->dado.id, (*t)->dado.count);
+        printf("NO já existente[word:%s, id:%d, count: %d]\n", (*t)->dado.word, (*t)->dado.id, (*t)->dado.count);
     }
 
 } // fim de add_new_user

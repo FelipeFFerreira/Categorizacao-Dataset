@@ -16,9 +16,9 @@
 #include "../lib_lista_int/lista.h"
 #include <omp.h>
 
-#define NUM_THREADS 1 //Defina a quantidade de threads a serem utilizadas.
+#define NUM_THREADS 6 //Defina a quantidade de threads a serem utilizadas.
 #define N 1000
-#define QTD_COLLUN 4
+#define QTD_COLLUN 24
 #define QTD_COLLUN_THREAD 4
 #define PROFUNDIDADE_BF 4
 
@@ -67,11 +67,9 @@ void print_responsabilidade_thread(args * _args);
 
 void create_threads(args * _args, int n, char *, ptr_args_arq, controles *);
 
-void thread_jobs_ss(args * args_t);
-
 void create_threads_mmory_set(args_memory *, unsigned int);
 
-void thread_jobs(args * _args, int, int, ptr_args_arq);
+void thread_jobs(args * _args, int, int, ptr_args_arq, char *);
 
 FILE *open_arquivo(char * str, char * modo);
 #endif //_THREADS_H
