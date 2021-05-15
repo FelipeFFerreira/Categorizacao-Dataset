@@ -28,7 +28,7 @@ struct avl_no {
 };
 
 
-bool new_distinct_info_column(avl_tree * t, avl_info x, int * id);
+bool new_distinct_info_column(avl_tree t, avl_info x, int * id);
 
 /*
  * Função que faz uma rotação para a esquerda na árvore AVL t.

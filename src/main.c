@@ -370,6 +370,7 @@ static void * ler_matriz_entrada(void * args)
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
             for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
+                strlwr(token);
                 strcpy(dataset_data[i][j], token);
                 token = strtok(NULL, ",");
             }

@@ -11,7 +11,7 @@
 #include <stdbool.h>
 
 
-bool new_distinct_info_column(avl_tree * t, avl_info x, int * id) {
+bool new_distinct_info_column(avl_tree t, avl_info x, int * id) {
     //printf("foo:%d\n", *id);
     //int a = *id + 2;
     //printf("foo + 2: %d\n", a);
@@ -28,7 +28,7 @@ void search_new_info(avl_tree * t, avl_info x, bool * h, bool * k, int * id) {
             fprintf(stderr, "Erro de alocacao de memoria!\n");
             exit(1);
         }
-        printf("Aloquei\n");
+
         *h = true;
 
         (*t)->dado = x;
@@ -38,6 +38,7 @@ void search_new_info(avl_tree * t, avl_info x, bool * h, bool * k, int * id) {
         (*t)->dado.id = *id;
         *id += 1;
         *k = true;
+        printf("Aloquei: %s, %d\n", (*t)->dado.word, (*t)->dado.id);
 
     }
     else if (strcmp(x.word, (*t)->dado.word) < 0) { // Inserir a esquerda
@@ -214,6 +215,7 @@ void balance_esq(avl_tree * t, bool * h) {
 // Rotaçao para a esquerda
 void rotacao_esq(avl_tree * t) {
     avl_tree p;
+    if ((*t)->dir == NULL) printf(" ****** NULL***** DIREITA");
     p = (*t)->dir;
     (*t)->dir = p->esq;
     p->esq = *t;
@@ -224,6 +226,7 @@ void rotacao_esq(avl_tree * t) {
 void rotacao_dir(avl_tree * t) {
     avl_tree p;
     p = (*t)->esq;
+    if ((*t)->esq == NULL) printf(" ****** NULL");
     (*t)->esq = p->dir;
     p->dir = *t;
     *t = p;
