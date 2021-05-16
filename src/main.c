@@ -7,8 +7,8 @@ typedef struct {
  ///* Regiao de Variaves Globais no Escopo main.c *
 static lst_ptr_th colun_date[QTD_COLLUN];
 int id_tree_colun_date[QTD_COLLUN];
-static char path_base[70] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\";
-static char path_dataset[] = "C:\\GitHub\\Paralela-Matriz-Normalizacao\\arq_csvs\\dataset_00_1000.csv";
+static char path_base[70] = "/mnt/sda2/arq_csvs/";
+static char path_dataset[] = "/mnt/sda2/arq_csvs/dataset_00_sem_virg.csv";
 
 struct args_arq args_main;
 args _args[NUM_THREADS]; //numero de args por threads de CPU
@@ -217,7 +217,9 @@ static void * normaliza_colun_date(void * _args)
 /// *Lidar com controle de escrita do arquivo de saida principal*
 static void * solicitacao_arquivo(void * argsArq)
 {
+	#ifdef INSTALL_DEBUG
     printf("Escrevendo arquivo Principal\n");
+    #endif
 	ptr_args_arq _argssArq = (ptr_args_arq) argsArq;
 	tipoDado i, j, count = 0;
 
@@ -242,7 +244,9 @@ static void * solicitacao_arquivo(void * argsArq)
         #endif // install_parallel_io
     } while (count < N);
     //fclose(_argssArq->arq_main);
+    #ifdef INSTALL_DEBUG
     printf("Finalizando escrita no arquivo Principal\n");
+    #endif
 	return 0;
 }
 
@@ -304,13 +308,16 @@ static void * processar_matriz_entrada(void * _args)
 void static processar_arquivos_outputs()
 {
     int status;
-    printf("[Processando arquivo principal..]\n");
+    #ifdef INSTALL_DEBUG
+    printf(">> 3. Processando IO arquivo principal..\n");
+    #endif
 	if (status_create( status = pthread_create((&args_main.thread), NULL, solicitacao_arquivo, (void *)&args_main)));
     else exit(0xF);
     pthread_join(args_main.thread, NULL);
-     printf("[Finalizado arquivo principal..]\n");
-
-    printf("Iniciando Escrita nos subs-arquivos\n..");
+    #ifdef INSTALL_DEBUG
+    printf("<< 3. Finalizado IO arquivo principal..\n\n");
+    printf(">> 4. Iniciando escrita nos subs-arquivos..\n");
+    #endif
 	for (unsigned int i = 0; i < NUM_THREADS; i++) {
         if (status_create( status = pthread_create((&_args[i].thread), NULL, solicitacao_arquivo_job, (void *)&_args[i])));
         else exit(0xF);
@@ -319,13 +326,17 @@ void static processar_arquivos_outputs()
 	for(unsigned int i = 0; i < NUM_THREADS; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
-	printf("Finalizando Escrita nos subs-arquivos\n..");
+	#ifdef INSTALL_DEBUG
+	printf("<< 4. Finalizando Escrita nos subs-arquivos\n\n");
+	#endif
 }
 
 static void categorizar_dados()
 {
     int status;
-    printf("Iniciando funções de trabalhos\n");
+    #ifdef INSTALL_DEBUG
+    printf(">> 2. Iniciando funções de categorização..\n");
+    #endif
     /*Repassa função de trabalho*/
 	for(unsigned int i = 0; i < NUM_THREADS; i++) {
 		if (status_create(status = pthread_create((&_args[i].thread), NULL, normaliza_colun_date, (void *)&_args[i])));
@@ -335,13 +346,17 @@ static void categorizar_dados()
 	for(unsigned int i = 0; i < NUM_THREADS; i++) {
 		pthread_join(_args[i].thread, NULL);
 	}
-	printf("Finalizando funções de trabalhos\n");
+	#ifdef INSTALL_DEBUG
+	printf("<< 2. Finalizando funções de categorização\n\n");
+	#endif
 }
 
 static void processar_dados_matriz()
 {
     int status;
-    printf("\n[Iniciando funções de categorizacao\n");
+    #ifdef INSTALL_DEBUG
+	printf(">> 1.Iniciando processamento de distinção..\n");
+	#endif
     /*Repassa função de trabalho*/
     for(unsigned int i = 0; i < NUM_THREADS; i++) {
         if (status_create(status = pthread_create((&_args[i].thread), NULL, processar_matriz_entrada, (void *)&_args[i])));
@@ -350,13 +365,17 @@ static void processar_dados_matriz()
     for(unsigned int i = 0; i < NUM_THREADS; i++) {
         pthread_join(_args[i].thread, NULL);
     }
-    printf("[Finalizando funções de categorizacao\n");
+    #ifdef INSTALL_DEBUG
+    printf("<< 1.Finalizando processamento de distinção\n\n");
+    #endif
 }
 
 
 static void processos_cpu()
 {
-    printf("Running Processos CPU..\n");
+	static unsigned int interacao = 0;
+	printf("---------- Interação de CPU n.%d ----------\n", interacao++);
+    //printf("Running Processos CPU..\n");
     #ifdef install_parallel_io
     printf(">Aguardando Todos Processos\n");
     aguarda_processos_threads();
@@ -368,11 +387,12 @@ static void processos_cpu()
     printf("Liberando espaço da matriz\n");
     clear_memory();
     #endif // install_parallel_io
-    printf(">Retormando\n");
+    //printf(">Retormando\n");
     #ifdef install_parallel_io
     liberar_processos_threads();
     desbloqueio_threads();
     #endif // install_parallel_io
+    printf("-----------------------------------------\n\n");
 }
 
 static void * ler_matriz_entrada(void * args)
@@ -392,23 +412,19 @@ static void * ler_matriz_entrada(void * args)
 
         for (i = 0; fscanf(_path_arq_t->fptr, " %500[^\n]s", str) != EOF && i < N; i++) {
             token = strtok(str, ",");
+            //printf("%d\n", i);
             for (int j = 0; token != NULL && j < QTD_COLLUN; j++) {
-                strlwr(token);
+                //strlwr(token);
                 strcpy(dataset_data[i][j], token);
                 token = strtok(NULL, ",");
             }
-            float temp = (float) (clock() - tempo)  / CLOCKS_PER_SEC;
-            if (temp > 10) {
-                printf("\n[Feedback: %fs][%d]\n", (float) (clock() - tempo)  / CLOCKS_PER_SEC, i);
-                tempo = clock();
-            }
-            //printf("%d\n", i);
         }
 
      count += i;
+     printf(">> Processado até o momento:%d linhas \n", count);
     } while (count < N_TOTAL);
-    printf("****************Sai***********************\n");
-    processos_cpu();
+    printf("\n------------------- Finalizando -------------------\n");
+
 	return;
 }
 
@@ -430,10 +446,10 @@ int main ()
     path_arq_t[0].fptr = open_arquivo(path_dataset, "r"); //path dataset
 
     tempo_aloc = clock();
-    printf("\nAlocando matriz de string de tamanho...: %d\n", N);
+    printf("\nTrabalhando com alocaçao de matriz de string de tamanho: %d\n", N);
     calloc_memory_dataset(N);
-    printf("\n[Tempo de alocação: %fs]\n", (float) (clock() - tempo_aloc)  / CLOCKS_PER_SEC);
-    printf("\nEm execucao ...\n");
+    printf("Tempo de alocação: %fs\n\n", (float) (clock() - tempo_aloc)  / CLOCKS_PER_SEC);
+    printf(">> Em execucao ...\n\n");
 
     if (status_create( status = pthread_create((&thread_1), NULL, ler_matriz_entrada, (void *)&path_arq_t[0])));
     else exit(0xF);

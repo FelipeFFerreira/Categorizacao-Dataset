@@ -16,7 +16,7 @@
 //#define INSTALL_THREAD_IO_PARALLEL
 
 #define install_parallel
-#define INSTALL_DEBUG exit(0xA);
+//#define INSTALL_DEBUG exit(0xA);
 
 #ifdef INSTALL_OMP
 	#include <omp.h>
@@ -31,8 +31,8 @@
 #define PROCEED 1
 #define NEXT 2
 
-#define N 50000
-#define N_TOTAL 100000
+#define N 30000
+#define N_TOTAL 1000000
 #define QTD_WORD 10000
 
 #endif //_MAIN_H
